@@ -1,4 +1,4 @@
-import type { CommitRecord, GithubRepo, Me, TrackedRepo } from '../types'
+import type { BlogPostDetail, BlogPostSummary, CommitRecord, GithubRepo, Me, TrackedRepo } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -39,4 +39,14 @@ export const api = {
   syncRepo: (id: number) =>
     apiFetch<{ savedCount: number }>(`/api/tracked-repos/${id}/sync`, { method: 'POST' }),
   commits: (id: number) => apiFetch<CommitRecord[]>(`/api/tracked-repos/${id}/commits`),
+  blogPosts: () => apiFetch<BlogPostSummary[]>('/api/blog-posts'),
+  generateBlogPost: () => apiFetch<BlogPostDetail>('/api/blog-posts/generate', { method: 'POST' }),
+  blogPost: (id: number) => apiFetch<BlogPostDetail>(`/api/blog-posts/${id}`),
+  updateBlogPost: (id: number, title: string, content: string) =>
+    apiFetch<BlogPostDetail>(`/api/blog-posts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title, content }),
+    }),
+  publishBlogPost: (id: number) => apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish`, { method: 'POST' }),
+  deleteBlogPost: (id: number) => apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE' }),
 }

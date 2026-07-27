@@ -33,3 +33,27 @@ export interface CommitRecord {
   committedAt: string
   htmlUrl: string
 }
+
+export interface BlogPostSummary {
+  id: number
+  title: string
+  published: boolean
+  createdAt: string
+  commitCount: number
+}
+
+export interface BlogCommitRef {
+  repoName: string
+  message: string
+  sha: string
+  htmlUrl: string
+}
+
+export interface BlogPostDetail {
+  id: number
+  title: string
+  content: string
+  published: boolean
+  createdAt: string
+  commits: BlogCommitRef[]
+}

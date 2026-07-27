@@ -1,5 +1,6 @@
 package com.jongheecode.portfolio.commit
 
+import com.jongheecode.portfolio.blog.BlogPost
 import com.jongheecode.portfolio.repo.TrackedRepo
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -41,6 +42,10 @@ class CommitRecord(
 
     @Column(nullable = false)
     val htmlUrl: String,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blog_post_id")
+    var blogPost: BlogPost? = null,
 
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),

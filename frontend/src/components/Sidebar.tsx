@@ -118,7 +118,6 @@ function Sidebar() {
         <NavItem
           to="/blog"
           label="블로그 포스팅"
-          badge="곧"
           icon={
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5}>
               <rect x="2.5" y="2" width="11" height="12" rx="1.5" />
