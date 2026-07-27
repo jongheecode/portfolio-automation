@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
@@ -44,6 +45,7 @@ class TrackedRepo(
     @Column(length = 500)
     val description: String? = null,
 
+    @ColumnDefault("false")
     var includeInPortfolio: Boolean = false,
 
     var lastSyncedAt: Instant? = null,
