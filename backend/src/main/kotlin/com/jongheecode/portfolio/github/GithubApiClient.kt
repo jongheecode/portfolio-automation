@@ -3,6 +3,7 @@ package com.jongheecode.portfolio.github
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.stereotype.Component
+import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import java.time.Instant
 
@@ -52,4 +53,24 @@ class GithubApiClient(restClientBuilder: RestClient.Builder) {
             .retrieve()
             .body(object : ParameterizedTypeReference<List<GithubCommitDto>>() {})
             ?: emptyList()
+
+    fun fetchReadme(accessToken: String, owner: String, repo: String): String? =
+        try {
+            restClient.get()
+                .uri("/repos/$owner/$repo/readme")
+                .header("Authorization", "Bearer $accessToken")
+                .header("Accept", "application/vnd.github.raw")
+                .retrieve()
+                .body(String::class.java)
+        } catch (e: HttpClientErrorException.NotFound) {
+            null
+        }
+
+    fun fetchLanguages(accessToken: String, owner: String, repo: String): Map<String, Long> =
+        restClient.get()
+            .uri("/repos/$owner/$repo/languages")
+            .header("Authorization", "Bearer $accessToken")
+            .retrieve()
+            .body(object : ParameterizedTypeReference<Map<String, Long>>() {})
+            ?: emptyMap()
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -72,6 +73,20 @@ class TrackedRepoController(
         return SyncResponse(savedCount)
     }
 
+    @PutMapping("/{id}/portfolio-selection")
+    fun setPortfolioSelection(
+        @AuthenticationPrincipal principal: OAuth2User,
+        @PathVariable id: Long,
+        @RequestBody request: PortfolioSelectionRequest,
+    ): TrackedRepoResponse {
+        val user = userRepository.currentUser(principal)
+        val repo = trackedRepoRepository.findByIdAndUser(id, user)
+            ?: error("레포를 찾을 수 없습니다: $id")
+        repo.includeInPortfolio = request.include
+        val saved = trackedRepoRepository.save(repo)
+        return saved.toResponse(commitRecordRepository.countByTrackedRepo(saved))
+    }
+
     @GetMapping("/{id}/commits")
     fun commits(@AuthenticationPrincipal principal: OAuth2User, @PathVariable id: Long): List<CommitRecordResponse> {
         val user = userRepository.currentUser(principal)
@@ -88,6 +103,7 @@ data class TrackRepoRequest(
     val description: String? = null,
 )
 data class SyncResponse(val savedCount: Int)
+data class PortfolioSelectionRequest(val include: Boolean)
 
 data class TrackedRepoResponse(
     val id: Long,
@@ -98,11 +114,12 @@ data class TrackedRepoResponse(
     val language: String?,
     val description: String?,
     val commitCount: Long,
+    val includeInPortfolio: Boolean,
     val lastSyncedAt: Instant?,
 )
 
 private fun TrackedRepo.toResponse(commitCount: Long) =
-    TrackedRepoResponse(id, owner, name, fullName, htmlUrl, language, description, commitCount, lastSyncedAt)
+    TrackedRepoResponse(id, owner, name, fullName, htmlUrl, language, description, commitCount, includeInPortfolio, lastSyncedAt)
 
 data class CommitRecordResponse(
     val id: Long,

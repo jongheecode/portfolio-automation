@@ -1,4 +1,4 @@
-package com.jongheecode.portfolio.repo
+package com.jongheecode.portfolio.pdf
 
 import com.jongheecode.portfolio.user.User
 import jakarta.persistence.Column
@@ -8,46 +8,32 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 
 @Entity
-@Table(
-    name = "tracked_repos",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "full_name"])],
-)
-class TrackedRepo(
+@Table(name = "portfolio_drafts")
+class PortfolioDraft(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     val user: User,
 
+    @Lob
     @Column(nullable = false)
-    val owner: String,
-
-    @Column(nullable = false)
-    val name: String,
+    var content: String,
 
     @Column(nullable = false)
-    val fullName: String,
+    var includedRepoIds: String,
 
     @Column(nullable = false)
-    val htmlUrl: String,
-
-    val language: String? = null,
-
-    @Column(length = 500)
-    val description: String? = null,
-
-    var includeInPortfolio: Boolean = false,
-
-    var lastSyncedAt: Instant? = null,
+    var includedSections: String,
 
     @Column(nullable = false)
-    val createdAt: Instant = Instant.now(),
+    var updatedAt: Instant = Instant.now(),
 )

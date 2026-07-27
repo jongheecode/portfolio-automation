@@ -15,21 +15,16 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/portfolio-pdf")
 class PdfController(
-    private val portfolioSnapshotService: PortfolioSnapshotService,
+    private val portfolioDraftRepository: PortfolioDraftRepository,
     private val portfolioPdfService: PortfolioPdfService,
     private val userRepository: UserRepository,
 ) {
-    @GetMapping("/summary")
-    fun summary(@AuthenticationPrincipal principal: OAuth2User): PortfolioSnapshot {
-        val user = userRepository.currentUser(principal)
-        return portfolioSnapshotService.build(user)
-    }
-
     @GetMapping
     fun download(@AuthenticationPrincipal principal: OAuth2User): ResponseEntity<ByteArray> {
         val user = userRepository.currentUser(principal)
-        val snapshot = portfolioSnapshotService.build(user)
-        val pdfBytes = portfolioPdfService.render(snapshot)
+        val draft = portfolioDraftRepository.findByUser(user)
+            ?: error("먼저 포트폴리오 초안을 생성해주세요")
+        val pdfBytes = portfolioPdfService.render(draft.content)
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_PDF
