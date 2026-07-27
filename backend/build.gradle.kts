@@ -27,6 +27,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+	implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")

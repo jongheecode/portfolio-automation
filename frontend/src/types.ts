@@ -57,3 +57,20 @@ export interface BlogPostDetail {
   createdAt: string
   commits: BlogCommitRef[]
 }
+
+export interface PortfolioRepoSummary {
+  fullName: string
+  description: string | null
+  language: string | null
+  commitCount: number
+  htmlUrl: string
+}
+
+export interface PortfolioSnapshot {
+  username: string
+  avatarUrl: string | null
+  generatedAt: string
+  totalRepos: number
+  totalCommits: number
+  repos: PortfolioRepoSummary[]
+}

@@ -1,4 +1,12 @@
-import type { BlogPostDetail, BlogPostSummary, CommitRecord, GithubRepo, Me, TrackedRepo } from '../types'
+import type {
+  BlogPostDetail,
+  BlogPostSummary,
+  CommitRecord,
+  GithubRepo,
+  Me,
+  PortfolioSnapshot,
+  TrackedRepo,
+} from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -49,4 +57,6 @@ export const api = {
     }),
   publishBlogPost: (id: number) => apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish`, { method: 'POST' }),
   deleteBlogPost: (id: number) => apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE' }),
+  portfolioSummary: () => apiFetch<PortfolioSnapshot>('/api/portfolio-pdf/summary'),
+  portfolioPdfUrl: () => `${API_BASE_URL}/api/portfolio-pdf`,
 }

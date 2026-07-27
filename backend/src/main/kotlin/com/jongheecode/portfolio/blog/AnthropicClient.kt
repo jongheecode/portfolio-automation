@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientResponseException
 
 data class AnthropicContentBlock(val type: String, val text: String?)
 data class AnthropicMessageResponse(val content: List<AnthropicContentBlock>)
@@ -21,20 +22,24 @@ class AnthropicClient(
     fun generatePost(repoName: String, commitSummaries: List<String>): GeneratedPost {
         val prompt = buildPrompt(repoName, commitSummaries)
 
-        val response = restClient.post()
-            .uri("/v1/messages")
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", "2023-06-01")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(
-                mapOf(
-                    "model" to "claude-sonnet-5",
-                    "max_tokens" to 2000,
-                    "messages" to listOf(mapOf("role" to "user", "content" to prompt)),
-                ),
-            )
-            .retrieve()
-            .body(AnthropicMessageResponse::class.java)
+        val response = try {
+            restClient.post()
+                .uri("/v1/messages")
+                .header("x-api-key", apiKey)
+                .header("anthropic-version", "2023-06-01")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    mapOf(
+                        "model" to "claude-sonnet-5",
+                        "max_tokens" to 2000,
+                        "messages" to listOf(mapOf("role" to "user", "content" to prompt)),
+                    ),
+                )
+                .retrieve()
+                .body(AnthropicMessageResponse::class.java)
+        } catch (e: RestClientResponseException) {
+            throw IllegalStateException("Anthropic API 호출 실패: ${extractApiErrorMessage(e)}")
+        }
             ?: error("Anthropic API 응답이 비어 있습니다")
 
         val text = response.content.firstOrNull { it.type == "text" }?.text
@@ -42,6 +47,13 @@ class AnthropicClient(
 
         return parseGeneratedPost(text)
     }
+
+    private fun extractApiErrorMessage(e: RestClientResponseException): String =
+        runCatching { objectMapper.readTree(e.responseBodyAsString).at("/error/message").asText() }
+            .getOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?: e.message
+            ?: "알 수 없는 오류"
 
     private fun parseGeneratedPost(text: String): GeneratedPost {
         val json = extractJson(text)

@@ -128,7 +128,6 @@ function Sidebar() {
         <NavItem
           to="/pdf"
           label="포트폴리오 PDF"
-          badge="곧"
           icon={
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5}>
               <path d="M8 2v7M8 9l3-3M8 9L5 6" />
