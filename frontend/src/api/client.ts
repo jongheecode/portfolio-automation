@@ -4,7 +4,8 @@ import type {
   CommitRecord,
   GithubRepo,
   Me,
-  PortfolioSnapshot,
+  PortfolioDraft,
+  PortfolioSection,
   TrackedRepo,
 } from '../types'
 
@@ -44,6 +45,11 @@ export const api = {
     }),
   untrackRepo: (id: number) =>
     apiFetch<void>(`/api/tracked-repos/${id}`, { method: 'DELETE' }),
+  setPortfolioInclusion: (id: number, include: boolean) =>
+    apiFetch<TrackedRepo>(`/api/tracked-repos/${id}/portfolio-selection`, {
+      method: 'PUT',
+      body: JSON.stringify({ include }),
+    }),
   syncRepo: (id: number) =>
     apiFetch<{ savedCount: number }>(`/api/tracked-repos/${id}/sync`, { method: 'POST' }),
   commits: (id: number) => apiFetch<CommitRecord[]>(`/api/tracked-repos/${id}/commits`),
@@ -57,6 +63,16 @@ export const api = {
     }),
   publishBlogPost: (id: number) => apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish`, { method: 'POST' }),
   deleteBlogPost: (id: number) => apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE' }),
-  portfolioSummary: () => apiFetch<PortfolioSnapshot>('/api/portfolio-pdf/summary'),
+  portfolioDraft: () => apiFetch<PortfolioDraft>('/api/portfolio-draft'),
+  generatePortfolioDraft: (sections: PortfolioSection[]) =>
+    apiFetch<PortfolioDraft>('/api/portfolio-draft/generate', {
+      method: 'POST',
+      body: JSON.stringify({ sections }),
+    }),
+  updatePortfolioDraft: (content: string) =>
+    apiFetch<PortfolioDraft>('/api/portfolio-draft', {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    }),
   portfolioPdfUrl: () => `${API_BASE_URL}/api/portfolio-pdf`,
 }

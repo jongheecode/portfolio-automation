@@ -22,6 +22,7 @@ export interface TrackedRepo {
   language: string | null
   description: string | null
   commitCount: number
+  includeInPortfolio: boolean
   lastSyncedAt: string | null
 }
 
@@ -58,19 +59,11 @@ export interface BlogPostDetail {
   commits: BlogCommitRef[]
 }
 
-export interface PortfolioRepoSummary {
-  fullName: string
-  description: string | null
-  language: string | null
-  commitCount: number
-  htmlUrl: string
+export interface PortfolioDraft {
+  content: string
+  includedRepoIds: number[]
+  includedSections: string[]
+  updatedAt: string | null
 }
 
-export interface PortfolioSnapshot {
-  username: string
-  avatarUrl: string | null
-  generatedAt: string
-  totalRepos: number
-  totalCommits: number
-  repos: PortfolioRepoSummary[]
-}
+export type PortfolioSection = 'intro' | 'challenges' | 'strengths' | 'techstack'

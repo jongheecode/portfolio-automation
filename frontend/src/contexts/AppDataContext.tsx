@@ -10,6 +10,7 @@ interface AppDataContextValue {
   commitsByRepo: Record<number, CommitRecord[]>
   trackRepo: (owner: string, name: string, language: string | null, description: string | null) => Promise<void>
   untrackRepo: (id: number) => Promise<void>
+  setPortfolioInclusion: (id: number, include: boolean) => Promise<void>
   syncRepo: (id: number) => Promise<number>
   logout: () => Promise<void>
   clearError: () => void
@@ -75,6 +76,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function setPortfolioInclusion(id: number, include: boolean) {
+    try {
+      const updated = await api.setPortfolioInclusion(id, include)
+      setTrackedRepos((prev) => prev.map((repo) => (repo.id === id ? updated : repo)))
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
   async function syncRepo(id: number) {
     try {
       const result = await api.syncRepo(id)
@@ -103,6 +113,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         commitsByRepo,
         trackRepo,
         untrackRepo,
+        setPortfolioInclusion,
         syncRepo,
         logout,
         clearError: () => setError(null),
