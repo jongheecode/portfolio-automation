@@ -30,6 +30,9 @@ data class GithubRepoResponse(
     val fullName: String,
     val htmlUrl: String,
     val isPrivate: Boolean,
+    val language: String?,
+    val description: String?,
 )
 
-private fun GithubRepoDto.toResponse() = GithubRepoResponse(id, name, fullName, htmlUrl, isPrivate)
+private fun GithubRepoDto.toResponse() =
+    GithubRepoResponse(id, name, fullName, htmlUrl, isPrivate, language, description)

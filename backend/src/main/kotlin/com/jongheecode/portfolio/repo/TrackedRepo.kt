@@ -39,6 +39,11 @@ class TrackedRepo(
     @Column(nullable = false)
     val htmlUrl: String,
 
+    val language: String? = null,
+
+    @Column(length = 500)
+    val description: String? = null,
+
     var lastSyncedAt: Instant? = null,
 
     @Column(nullable = false)

@@ -25,13 +25,14 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
 export const api = {
   loginUrl: () => `${API_BASE_URL}/oauth2/authorization/github`,
+  logout: () => apiFetch<void>('/logout', { method: 'POST' }),
   me: () => apiFetch<Me>('/api/me'),
   githubRepos: () => apiFetch<GithubRepo[]>('/api/github/repos'),
   trackedRepos: () => apiFetch<TrackedRepo[]>('/api/tracked-repos'),
-  trackRepo: (owner: string, name: string) =>
+  trackRepo: (owner: string, name: string, language: string | null, description: string | null) =>
     apiFetch<TrackedRepo>('/api/tracked-repos', {
       method: 'POST',
-      body: JSON.stringify({ owner, name }),
+      body: JSON.stringify({ owner, name, language, description }),
     }),
   untrackRepo: (id: number) =>
     apiFetch<void>(`/api/tracked-repos/${id}`, { method: 'DELETE' }),

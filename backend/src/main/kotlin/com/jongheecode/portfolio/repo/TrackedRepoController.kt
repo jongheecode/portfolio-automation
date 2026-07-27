@@ -27,7 +27,8 @@ class TrackedRepoController(
     @GetMapping
     fun list(@AuthenticationPrincipal principal: OAuth2User): List<TrackedRepoResponse> {
         val user = userRepository.currentUser(principal)
-        return trackedRepoRepository.findByUser(user).map { it.toResponse() }
+        return trackedRepoRepository.findByUser(user)
+            .map { it.toResponse(commitRecordRepository.countByTrackedRepo(it)) }
     }
 
     @PostMapping
@@ -47,9 +48,11 @@ class TrackedRepoController(
                 name = request.name,
                 fullName = fullName,
                 htmlUrl = "https://github.com/$fullName",
+                language = request.language,
+                description = request.description,
             ),
         )
-        return saved.toResponse()
+        return saved.toResponse(0)
     }
 
     @DeleteMapping("/{id}")
@@ -78,7 +81,12 @@ class TrackedRepoController(
     }
 }
 
-data class TrackRepoRequest(val owner: String, val name: String)
+data class TrackRepoRequest(
+    val owner: String,
+    val name: String,
+    val language: String? = null,
+    val description: String? = null,
+)
 data class SyncResponse(val savedCount: Int)
 
 data class TrackedRepoResponse(
@@ -87,10 +95,14 @@ data class TrackedRepoResponse(
     val name: String,
     val fullName: String,
     val htmlUrl: String,
+    val language: String?,
+    val description: String?,
+    val commitCount: Long,
     val lastSyncedAt: Instant?,
 )
 
-private fun TrackedRepo.toResponse() = TrackedRepoResponse(id, owner, name, fullName, htmlUrl, lastSyncedAt)
+private fun TrackedRepo.toResponse(commitCount: Long) =
+    TrackedRepoResponse(id, owner, name, fullName, htmlUrl, language, description, commitCount, lastSyncedAt)
 
 data class CommitRecordResponse(
     val id: Long,

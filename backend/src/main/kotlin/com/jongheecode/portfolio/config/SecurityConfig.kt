@@ -4,6 +4,7 @@ import com.jongheecode.portfolio.user.CustomOAuth2UserService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
 import org.springframework.security.web.SecurityFilterChain
@@ -35,6 +36,9 @@ class SecurityConfig(
                             setAlwaysUseDefaultTargetUrl(true)
                         },
                     )
+            }
+            .logout { logout ->
+                logout.logoutSuccessHandler { _, response, _ -> response.status = HttpStatus.NO_CONTENT.value() }
             }
 
         return http.build()

@@ -12,6 +12,8 @@ data class GithubRepoDto(
     @JsonProperty("full_name") val fullName: String,
     @JsonProperty("html_url") val htmlUrl: String,
     @JsonProperty("private") val isPrivate: Boolean,
+    val language: String?,
+    val description: String?,
 )
 
 data class GithubCommitDto(

@@ -9,6 +9,8 @@ export interface GithubRepo {
   fullName: string
   htmlUrl: string
   isPrivate: boolean
+  language: string | null
+  description: string | null
 }
 
 export interface TrackedRepo {
@@ -17,6 +19,9 @@ export interface TrackedRepo {
   name: string
   fullName: string
   htmlUrl: string
+  language: string | null
+  description: string | null
+  commitCount: number
   lastSyncedAt: string | null
 }
 
