@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: portfolio-automation
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME:portfolio}
+    username: ${DB_USERNAME:portfolio}
+    password: ${DB_PASSWORD:portfolio}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope: read:user,repo
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+server:
+  port: ${SERVER_PORT:8080}
