@@ -44,8 +44,7 @@ class GeminiClient(
     private fun callGemini(prompt: String): String {
         val response = try {
             restClient.post()
-                .uri("/v1beta/models/gemini-2.5-flash:generateContent")
-                .header("x-goog-api-key", apiKey)
+                .uri("/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(mapOf("contents" to listOf(mapOf("parts" to listOf(mapOf("text" to prompt))))))
                 .retrieve()
@@ -95,13 +94,13 @@ class GeminiClient(
         return """
             아래 GitHub 프로젝트 정보를 바탕으로 개발자 개인 포트폴리오 문서를 한국어 마크다운으로 작성해줘.
 
-            포함할 섹션:
+            포함할 섹션 (이 목록에 없는 섹션은 절대 만들지 마, 예를 들어 목록에 "강점/약점"이 없으면 강점/약점 섹션을 쓰면 안 돼):
             $sectionInstructions
             - 프로젝트별 카드: 한 줄 소개 + 주요 기능/역할 (각 프로젝트마다 ## 소제목으로 구분)
 
             요구사항:
             - 문서 최상단에 "# (이름 없이) 개발 포트폴리오" 같은 제목을 하나 넣어줘
-            - "강점/약점" 섹션은 README/커밋만으로는 알 수 없는 성격 판단이니, 언어 다양성/커밋 패턴에서 조심스럽게 추측하는 톤으로 쓰고 "직접 검토가 필요하다"는 취지를 문서에 넣지 마(초안이니 자연스럽게 서술만)
+            ${if ("strengths" in sections) "- \"강점/약점\" 섹션은 README/커밋만으로는 알 수 없는 성격 판단이니, 언어 다양성/커밋 패턴에서 조심스럽게 추측하는 톤으로 쓰고 \"직접 검토가 필요하다\"는 취지를 문서에 넣지 마(초안이니 자연스럽게 서술만)" else ""}
             - 과장된 수식어 없이 담백하게, 실제 README/커밋 내용에 기반해서 작성 (근거 없는 내용 지어내지 마)
             - 응답은 마크다운 본문만 줘. 다른 설명이나 JSON 래핑 없이.
 

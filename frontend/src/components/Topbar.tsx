@@ -18,7 +18,12 @@ function Topbar() {
   const { toggleTheme } = useTheme()
 
   const isRepoDetail = location.pathname.startsWith('/repos/') && !!params.id
-  const pageTitle = isRepoDetail ? '커밋 타임라인' : TITLES[location.pathname] ?? '대시보드'
+  const isBlogDetail = location.pathname.startsWith('/blog/') && !!params.id
+  const pageTitle = isRepoDetail
+    ? '커밋 타임라인'
+    : isBlogDetail
+      ? '블로그 포스팅'
+      : TITLES[location.pathname] ?? '대시보드'
 
   return (
     <header

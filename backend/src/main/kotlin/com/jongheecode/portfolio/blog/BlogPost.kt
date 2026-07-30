@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.Instant
@@ -27,8 +26,9 @@ class BlogPost(
     @Column(nullable = false, length = 300)
     var title: String,
 
-    @Lob
-    @Column(nullable = false)
+    // PostgreSQL에서 @Lob 문자열은 Large Object(oid)로 매핑돼 트랜잭션 밖에서 못 읽는 문제가 있어
+    // 일반 TEXT 컬럼으로 명시. Postgres TEXT는 길이 제한이 사실상 없어 문제 없음.
+    @Column(nullable = false, columnDefinition = "TEXT")
     var content: String,
 
     @Column(nullable = false)
