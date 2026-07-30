@@ -7,8 +7,11 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
-data class AnthropicContentBlock(val type: String, val text: String?)
-data class AnthropicMessageResponse(val content: List<AnthropicContentBlock>)
+data class GeminiPart(val text: String?)
+data class GeminiContent(val parts: List<GeminiPart>)
+data class GeminiCandidate(val content: GeminiContent?)
+data class GeminiGenerateResponse(val candidates: List<GeminiCandidate>?)
+
 data class GeneratedPost(val title: String, val content: String)
 
 data class PortfolioRepoInput(
@@ -21,46 +24,39 @@ data class PortfolioRepoInput(
 )
 
 @Component
-class AnthropicClient(
+class GeminiClient(
     restClientBuilder: RestClient.Builder,
     private val objectMapper: ObjectMapper,
-    @Value("\${anthropic.api-key}") private val apiKey: String,
+    @Value("\${gemini.api-key}") private val apiKey: String,
 ) {
-    private val restClient = restClientBuilder.baseUrl("https://api.anthropic.com").build()
+    private val restClient = restClientBuilder.baseUrl("https://generativelanguage.googleapis.com").build()
 
     fun generatePost(repoName: String, commitSummaries: List<String>): GeneratedPost {
-        val text = callAnthropic(buildPrompt(repoName, commitSummaries), maxTokens = 2000)
+        val text = callGemini(buildPrompt(repoName, commitSummaries))
         return parseGeneratedPost(text)
     }
 
     fun generatePortfolioDraft(sections: List<String>, repos: List<PortfolioRepoInput>): String {
-        val text = callAnthropic(buildPortfolioPrompt(sections, repos), maxTokens = 4000)
+        val text = callGemini(buildPortfolioPrompt(sections, repos))
         return stripMarkdownFence(text)
     }
 
-    private fun callAnthropic(prompt: String, maxTokens: Int): String {
+    private fun callGemini(prompt: String): String {
         val response = try {
             restClient.post()
-                .uri("/v1/messages")
-                .header("x-api-key", apiKey)
-                .header("anthropic-version", "2023-06-01")
+                .uri("/v1beta/models/gemini-2.5-flash:generateContent")
+                .header("x-goog-api-key", apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(
-                    mapOf(
-                        "model" to "claude-sonnet-5",
-                        "max_tokens" to maxTokens,
-                        "messages" to listOf(mapOf("role" to "user", "content" to prompt)),
-                    ),
-                )
+                .body(mapOf("contents" to listOf(mapOf("parts" to listOf(mapOf("text" to prompt))))))
                 .retrieve()
-                .body(AnthropicMessageResponse::class.java)
+                .body(GeminiGenerateResponse::class.java)
         } catch (e: RestClientResponseException) {
-            throw IllegalStateException("Anthropic API 호출 실패: ${extractApiErrorMessage(e)}")
+            throw IllegalStateException("Gemini API 호출 실패: ${extractApiErrorMessage(e)}")
         }
-            ?: error("Anthropic API 응답이 비어 있습니다")
+            ?: error("Gemini API 응답이 비어 있습니다")
 
-        return response.content.firstOrNull { it.type == "text" }?.text
-            ?: error("Anthropic API 응답에 텍스트가 없습니다")
+        return response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
+            ?: error("Gemini API 응답에 텍스트가 없습니다")
     }
 
     // 모델이 "코드펜스 쓰지 마"라는 지시를 무시하고 ```markdown ... ``` 로 감싸는 경우를 대비.

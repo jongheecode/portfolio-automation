@@ -23,7 +23,7 @@ import java.time.Instant
 class BlogPostController(
     private val blogPostRepository: BlogPostRepository,
     private val commitRecordRepository: CommitRecordRepository,
-    private val anthropicClient: AnthropicClient,
+    private val geminiClient: GeminiClient,
     private val userRepository: UserRepository,
 ) {
     @GetMapping
@@ -41,7 +41,7 @@ class BlogPostController(
 
         val repoNames = commits.map { it.trackedRepo.fullName }.distinct().joinToString(", ")
         val summaries = commits.map { "[${it.trackedRepo.name}] ${it.firstLine()}" }
-        val generated = anthropicClient.generatePost(repoNames, summaries)
+        val generated = geminiClient.generatePost(repoNames, summaries)
 
         val saved = blogPostRepository.save(BlogPost(user = user, title = generated.title, content = generated.content))
         commits.forEach { it.blogPost = saved }

@@ -1,6 +1,6 @@
 package com.jongheecode.portfolio.pdf
 
-import com.jongheecode.portfolio.blog.AnthropicClient
+import com.jongheecode.portfolio.blog.GeminiClient
 import com.jongheecode.portfolio.blog.PortfolioRepoInput
 import com.jongheecode.portfolio.commit.CommitRecordRepository
 import com.jongheecode.portfolio.github.GithubApiClient
@@ -27,7 +27,7 @@ class PortfolioDraftController(
     private val trackedRepoRepository: TrackedRepoRepository,
     private val commitRecordRepository: CommitRecordRepository,
     private val githubApiClient: GithubApiClient,
-    private val anthropicClient: AnthropicClient,
+    private val geminiClient: GeminiClient,
     private val userRepository: UserRepository,
 ) {
     @GetMapping
@@ -64,7 +64,7 @@ class PortfolioDraftController(
             throw IllegalStateException("GitHub 정보를 가져오는 데 실패했습니다: ${e.message}")
         }
 
-        val content = anthropicClient.generatePortfolioDraft(request.sections, repoInputs)
+        val content = geminiClient.generatePortfolioDraft(request.sections, repoInputs)
         val repoIdsCsv = selectedRepos.joinToString(",") { it.id.toString() }
         val sectionsCsv = request.sections.joinToString(",")
 
