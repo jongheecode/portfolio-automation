@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import MarkdownEditor from '../components/MarkdownEditor'
+import PublishedBadge from '../components/PublishedBadge'
 import type { BlogPostDetail } from '../types'
 
 function BlogPostDetailPage() {
@@ -85,18 +86,7 @@ function BlogPostDetailPage() {
           </svg>
           목록
         </button>
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            padding: '3px 10px',
-            borderRadius: 999,
-            color: post.published ? 'var(--green)' : 'var(--muted)',
-            background: post.published ? 'color-mix(in srgb, var(--green) 16%, transparent)' : 'var(--panel2)',
-          }}
-        >
-          {post.published ? '발행됨' : '초안'}
-        </span>
+        <PublishedBadge published={post.published} />
       </div>
 
       {error && <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{error}</p>}

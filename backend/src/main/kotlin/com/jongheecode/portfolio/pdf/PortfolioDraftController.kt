@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.client.RestClientException
 import java.time.Instant
 
 @RestController
@@ -50,13 +51,17 @@ class PortfolioDraftController(
         val selectedRepos = trackedRepoRepository.findByUser(user).filter { it.includeInPortfolio }
         check(selectedRepos.isNotEmpty()) { "최소 1개 레포를 선택해주세요" }
 
-        val repoInputs = selectedRepos.map { repo ->
-            val readme = githubApiClient.fetchReadme(user.accessToken, repo.owner, repo.name)?.take(4000)
-            val languages = githubApiClient.fetchLanguages(user.accessToken, repo.owner, repo.name)
-            val commits = commitRecordRepository.findByTrackedRepoOrderByCommittedAtDesc(repo)
-                .take(15)
-                .map { it.message.lineSequence().first() }
-            PortfolioRepoInput(repo.fullName, repo.description, repo.language, languages, readme, commits)
+        val repoInputs = try {
+            selectedRepos.map { repo ->
+                val readme = githubApiClient.fetchReadme(user.accessToken, repo.owner, repo.name)?.take(4000)
+                val languages = githubApiClient.fetchLanguages(user.accessToken, repo.owner, repo.name)
+                val commits = commitRecordRepository.findByTrackedRepoOrderByCommittedAtDesc(repo)
+                    .take(15)
+                    .map { it.firstLine() }
+                PortfolioRepoInput(repo.fullName, repo.description, repo.language, languages, readme, commits)
+            }
+        } catch (e: RestClientException) {
+            throw IllegalStateException("GitHub 정보를 가져오는 데 실패했습니다: ${e.message}")
         }
 
         val content = anthropicClient.generatePortfolioDraft(request.sections, repoInputs)

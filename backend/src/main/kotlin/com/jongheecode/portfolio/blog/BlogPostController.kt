@@ -40,7 +40,7 @@ class BlogPostController(
         check(commits.isNotEmpty()) { "아직 블로그에 포함되지 않은 새 커밋이 없습니다. 먼저 레포를 동기화해주세요." }
 
         val repoNames = commits.map { it.trackedRepo.fullName }.distinct().joinToString(", ")
-        val summaries = commits.map { "[${it.trackedRepo.name}] ${it.message.lineSequence().first()}" }
+        val summaries = commits.map { "[${it.trackedRepo.name}] ${it.firstLine()}" }
         val generated = anthropicClient.generatePost(repoNames, summaries)
 
         val saved = blogPostRepository.save(BlogPost(user = user, title = generated.title, content = generated.content))
@@ -120,5 +120,5 @@ private fun BlogPost.toDetail(commits: List<CommitRecord>) = BlogPostDetail(
     content,
     published,
     createdAt,
-    commits.map { BlogCommitRef(it.trackedRepo.fullName, it.message.lineSequence().first(), it.sha, it.htmlUrl) },
+    commits.map { BlogCommitRef(it.trackedRepo.fullName, it.firstLine(), it.sha, it.htmlUrl) },
 )

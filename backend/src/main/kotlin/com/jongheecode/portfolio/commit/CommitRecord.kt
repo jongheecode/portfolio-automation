@@ -49,4 +49,6 @@ class CommitRecord(
 
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),
-)
+) {
+    fun firstLine(): String = message.lineSequence().first()
+}

@@ -4,20 +4,7 @@ import { useAppData } from '../contexts/AppDataContext'
 import { commitTitle, parseCommitTag } from '../utils/commitTag'
 import { languageColor } from '../utils/languageColor'
 import { formatRelativeTime } from '../utils/time'
-
-function segStyle(active: boolean): CSSProperties {
-  return {
-    border: 'none',
-    borderRadius: 6,
-    padding: '5px 13px',
-    fontSize: 12.5,
-    fontWeight: 500,
-    cursor: 'pointer',
-    background: active ? 'var(--panel)' : 'transparent',
-    color: active ? 'var(--text)' : 'var(--muted)',
-    boxShadow: active ? '0 1px 2px rgba(0,0,0,0.25)' : 'none',
-  }
-}
+import { segmentButtonStyle } from '../utils/styles'
 
 function tagBadgeStyle(color: string): CSSProperties {
   return {
@@ -115,10 +102,10 @@ function RepoDetailPage() {
             {syncing ? '동기화 중...' : '지금 동기화'}
           </button>
           <div style={{ display: 'flex', background: 'var(--panel2)', border: '1px solid var(--border)', borderRadius: 8, padding: 3 }}>
-            <button type="button" onClick={() => setStyle('list')} style={segStyle(style === 'list')}>
+            <button type="button" onClick={() => setStyle('list')} style={segmentButtonStyle(style === 'list')}>
               리스트
             </button>
-            <button type="button" onClick={() => setStyle('timeline')} style={segStyle(style === 'timeline')}>
+            <button type="button" onClick={() => setStyle('timeline')} style={segmentButtonStyle(style === 'timeline')}>
               타임라인
             </button>
           </div>

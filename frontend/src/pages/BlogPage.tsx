@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import PublishedBadge from '../components/PublishedBadge'
 import type { BlogPostSummary } from '../types'
 
 function BlogPage() {
@@ -112,19 +113,7 @@ function BlogPage() {
                   커밋 {post.commitCount}개 · {new Date(post.createdAt).toLocaleDateString('ko-KR')}
                 </div>
               </div>
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '3px 10px',
-                  borderRadius: 999,
-                  flexShrink: 0,
-                  color: post.published ? 'var(--green)' : 'var(--muted)',
-                  background: post.published ? 'color-mix(in srgb, var(--green) 16%, transparent)' : 'var(--panel2)',
-                }}
-              >
-                {post.published ? '발행됨' : '초안'}
-              </span>
+              <PublishedBadge published={post.published} />
             </div>
           ))}
         </div>

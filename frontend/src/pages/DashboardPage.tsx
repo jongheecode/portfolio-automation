@@ -5,6 +5,7 @@ import { useAppData } from '../contexts/AppDataContext'
 import { languageColor } from '../utils/languageColor'
 import { countThisWeek } from '../utils/heatmap'
 import { formatRelativeTime } from '../utils/time'
+import { segmentButtonStyle } from '../utils/styles'
 
 const statCardStyle: CSSProperties = {
   border: '1px solid var(--border)',
@@ -14,20 +15,6 @@ const statCardStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 6,
-}
-
-function segStyle(active: boolean): CSSProperties {
-  return {
-    border: 'none',
-    borderRadius: 6,
-    padding: '5px 13px',
-    fontSize: 12.5,
-    fontWeight: 500,
-    cursor: 'pointer',
-    background: active ? 'var(--panel)' : 'transparent',
-    color: active ? 'var(--text)' : 'var(--muted)',
-    boxShadow: active ? '0 1px 2px rgba(0,0,0,0.25)' : 'none',
-  }
 }
 
 function DashboardPage() {
@@ -174,10 +161,10 @@ function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>추적 중인 레포</span>
               <div style={{ display: 'flex', background: 'var(--panel2)', border: '1px solid var(--border)', borderRadius: 8, padding: 3 }}>
-                <button type="button" onClick={() => setLayout('cards')} style={segStyle(layout === 'cards')}>
+                <button type="button" onClick={() => setLayout('cards')} style={segmentButtonStyle(layout === 'cards')}>
                   카드
                 </button>
-                <button type="button" onClick={() => setLayout('table')} style={segStyle(layout === 'table')}>
+                <button type="button" onClick={() => setLayout('table')} style={segmentButtonStyle(layout === 'table')}>
                   테이블
                 </button>
               </div>

@@ -29,37 +29,16 @@ class AnthropicClient(
     private val restClient = restClientBuilder.baseUrl("https://api.anthropic.com").build()
 
     fun generatePost(repoName: String, commitSummaries: List<String>): GeneratedPost {
-        val prompt = buildPrompt(repoName, commitSummaries)
-
-        val response = try {
-            restClient.post()
-                .uri("/v1/messages")
-                .header("x-api-key", apiKey)
-                .header("anthropic-version", "2023-06-01")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(
-                    mapOf(
-                        "model" to "claude-sonnet-5",
-                        "max_tokens" to 2000,
-                        "messages" to listOf(mapOf("role" to "user", "content" to prompt)),
-                    ),
-                )
-                .retrieve()
-                .body(AnthropicMessageResponse::class.java)
-        } catch (e: RestClientResponseException) {
-            throw IllegalStateException("Anthropic API 호출 실패: ${extractApiErrorMessage(e)}")
-        }
-            ?: error("Anthropic API 응답이 비어 있습니다")
-
-        val text = response.content.firstOrNull { it.type == "text" }?.text
-            ?: error("Anthropic API 응답에 텍스트가 없습니다")
-
+        val text = callAnthropic(buildPrompt(repoName, commitSummaries), maxTokens = 2000)
         return parseGeneratedPost(text)
     }
 
     fun generatePortfolioDraft(sections: List<String>, repos: List<PortfolioRepoInput>): String {
-        val prompt = buildPortfolioPrompt(sections, repos)
+        val text = callAnthropic(buildPortfolioPrompt(sections, repos), maxTokens = 4000)
+        return stripMarkdownFence(text)
+    }
 
+    private fun callAnthropic(prompt: String, maxTokens: Int): String {
         val response = try {
             restClient.post()
                 .uri("/v1/messages")
@@ -69,7 +48,7 @@ class AnthropicClient(
                 .body(
                     mapOf(
                         "model" to "claude-sonnet-5",
-                        "max_tokens" to 4000,
+                        "max_tokens" to maxTokens,
                         "messages" to listOf(mapOf("role" to "user", "content" to prompt)),
                     ),
                 )
@@ -82,6 +61,14 @@ class AnthropicClient(
 
         return response.content.firstOrNull { it.type == "text" }?.text
             ?: error("Anthropic API 응답에 텍스트가 없습니다")
+    }
+
+    // 모델이 "코드펜스 쓰지 마"라는 지시를 무시하고 ```markdown ... ``` 로 감싸는 경우를 대비.
+    private fun stripMarkdownFence(text: String): String {
+        val trimmed = text.trim()
+        if (!trimmed.startsWith("```")) return trimmed
+        val withoutFirstLine = trimmed.substringAfter("\n")
+        return withoutFirstLine.removeSuffix("```").trim()
     }
 
     private fun buildPortfolioPrompt(sections: List<String>, repos: List<PortfolioRepoInput>): String {
