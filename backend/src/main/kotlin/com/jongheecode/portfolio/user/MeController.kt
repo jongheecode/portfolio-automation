@@ -21,8 +21,8 @@ class MeController(
             MeResponse(
                 username = user.username,
                 avatarUrl = user.avatarUrl,
-                tistoryConnected = user.tistoryAccessToken != null,
-                tistoryBlogName = user.tistoryBlogName,
+                devtoConnected = user.devtoApiKey != null,
+                devtoUsername = user.devtoUsername,
             ),
         )
     }
@@ -31,6 +31,6 @@ class MeController(
 data class MeResponse(
     val username: String,
     val avatarUrl: String?,
-    val tistoryConnected: Boolean,
-    val tistoryBlogName: String?,
+    val devtoConnected: Boolean,
+    val devtoUsername: String?,
 )
