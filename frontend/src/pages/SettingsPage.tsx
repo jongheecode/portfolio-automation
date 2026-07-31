@@ -6,23 +6,26 @@ import { useTheme } from '../contexts/ThemeContext'
 function SettingsPage() {
   const { me } = useAppData()
   const { themeLabel, toggleTheme } = useTheme()
+  const [apiKey, setApiKey] = useState('')
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleConnectTistory() {
+  async function handleConnectDevTo() {
+    if (!apiKey.trim()) return
     setConnecting(true)
+    setError(null)
     try {
-      const { url } = await api.tistoryAuthorizeUrl()
-      window.location.href = url
+      await api.connectDevTo(apiKey.trim())
+      window.location.reload()
     } catch (err) {
       setError((err as Error).message)
       setConnecting(false)
     }
   }
 
-  async function handleDisconnectTistory() {
+  async function handleDisconnectDevTo() {
     try {
-      await api.disconnectTistory()
+      await api.disconnectDevTo()
       window.location.reload()
     } catch (err) {
       setError((err as Error).message)
@@ -47,39 +50,56 @@ function SettingsPage() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>티스토리 연동</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>dev.to 연동</div>
             <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 3 }}>
-              {me?.tistoryConnected ? `${me.tistoryBlogName}.tistory.com에 발행` : '연결하면 블로그 글을 실제로 발행할 수 있어요'}
+              {me?.devtoConnected ? `@${me.devtoUsername}로 발행` : '연결하면 블로그 글을 실제로 발행할 수 있어요'}
             </div>
           </div>
-          {me?.tistoryConnected ? (
+          {me?.devtoConnected ? (
             <button
               type="button"
-              onClick={handleDisconnectTistory}
+              onClick={handleDisconnectDevTo}
               style={{ fontSize: 13, color: 'var(--muted)', background: 'var(--panel2)', border: '1px solid var(--border)', borderRadius: 7, padding: '5px 12px', cursor: 'pointer' }}
             >
               연결 해제
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={handleConnectTistory}
-              disabled={connecting}
-              style={{
-                fontSize: 13,
-                color: '#fff',
-                background: 'var(--accent)',
-                border: 'none',
-                borderRadius: 7,
-                padding: '5px 12px',
-                cursor: connecting ? 'default' : 'pointer',
-                opacity: connecting ? 0.6 : 1,
-              }}
-            >
-              {connecting ? '이동 중...' : '연결하기'}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="dev.to API 키"
+                style={{
+                  fontSize: 13,
+                  border: '1px solid var(--border)',
+                  borderRadius: 7,
+                  padding: '5px 10px',
+                  background: 'var(--panel2)',
+                  color: 'var(--text)',
+                  width: 200,
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleConnectDevTo}
+                disabled={connecting || !apiKey.trim()}
+                style={{
+                  fontSize: 13,
+                  color: '#fff',
+                  background: 'var(--accent)',
+                  border: 'none',
+                  borderRadius: 7,
+                  padding: '5px 12px',
+                  cursor: connecting ? 'default' : 'pointer',
+                  opacity: connecting || !apiKey.trim() ? 0.6 : 1,
+                }}
+              >
+                {connecting ? '연결 중...' : '연결하기'}
+              </button>
+            </div>
           )}
         </div>
 
