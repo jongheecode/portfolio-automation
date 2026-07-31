@@ -1,6 +1,8 @@
 export interface Me {
   username: string
   avatarUrl: string | null
+  tistoryConnected: boolean
+  tistoryBlogName: string | null
 }
 
 export interface GithubRepo {
@@ -55,6 +57,7 @@ export interface BlogPostDetail {
   title: string
   content: string
   published: boolean
+  tistoryUrl: string | null
   createdAt: string
   commits: BlogCommitRef[]
 }
