@@ -2,6 +2,8 @@ package com.jongheecode.portfolio.blog
 
 import com.jongheecode.portfolio.commit.CommitRecord
 import com.jongheecode.portfolio.commit.CommitRecordRepository
+import com.jongheecode.portfolio.markdown.MarkdownRenderer
+import com.jongheecode.portfolio.tistory.TistoryApiClient
 import com.jongheecode.portfolio.user.UserRepository
 import com.jongheecode.portfolio.user.currentUser
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -25,6 +27,8 @@ class BlogPostController(
     private val commitRecordRepository: CommitRecordRepository,
     private val geminiClient: GeminiClient,
     private val userRepository: UserRepository,
+    private val tistoryApiClient: TistoryApiClient,
+    private val markdownRenderer: MarkdownRenderer,
 ) {
     @GetMapping
     fun list(@AuthenticationPrincipal principal: OAuth2User): List<BlogPostSummary> {
@@ -80,6 +84,22 @@ class BlogPostController(
         return saved.toDetail(commitRecordRepository.findByBlogPostOrderByCommittedAtAsc(saved))
     }
 
+    @PostMapping("/{id}/publish-to-tistory")
+    fun publishToTistory(@AuthenticationPrincipal principal: OAuth2User, @PathVariable id: Long): BlogPostDetail {
+        val user = userRepository.currentUser(principal)
+        val post = blogPostRepository.findByIdAndUser(id, user) ?: error("포스트를 찾을 수 없습니다: $id")
+        check(user.tistoryAccessToken != null && user.tistoryBlogName != null) {
+            "먼저 설정에서 티스토리를 연결해주세요"
+        }
+        check(post.tistoryUrl == null) { "이미 티스토리에 올린 글입니다" }
+
+        val html = markdownRenderer.toHtml(post.content)
+        val url = tistoryApiClient.publishPost(user.tistoryAccessToken!!, user.tistoryBlogName!!, post.title, html)
+        post.tistoryUrl = url
+        val saved = blogPostRepository.save(post)
+        return saved.toDetail(commitRecordRepository.findByBlogPostOrderByCommittedAtAsc(saved))
+    }
+
     @DeleteMapping("/{id}")
     fun delete(@AuthenticationPrincipal principal: OAuth2User, @PathVariable id: Long) {
         val user = userRepository.currentUser(principal)
@@ -106,6 +126,7 @@ data class BlogPostDetail(
     val title: String,
     val content: String,
     val published: Boolean,
+    val tistoryUrl: String?,
     val createdAt: Instant,
     val commits: List<BlogCommitRef>,
 )
@@ -119,6 +140,7 @@ private fun BlogPost.toDetail(commits: List<CommitRecord>) = BlogPostDetail(
     title,
     content,
     published,
+    tistoryUrl,
     createdAt,
     commits.map { BlogCommitRef(it.trackedRepo.fullName, it.firstLine(), it.sha, it.htmlUrl) },
 )
