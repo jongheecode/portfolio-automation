@@ -63,10 +63,14 @@ export const api = {
     }),
   publishBlogPost: (id: number) => apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish`, { method: 'POST' }),
   deleteBlogPost: (id: number) => apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE' }),
-  tistoryAuthorizeUrl: () => apiFetch<{ url: string }>('/api/tistory/authorize-url'),
-  disconnectTistory: () => apiFetch<void>('/api/tistory/connection', { method: 'DELETE' }),
-  publishToTistory: (id: number) =>
-    apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish-to-tistory`, { method: 'POST' }),
+  connectDevTo: (apiKey: string) =>
+    apiFetch<{ username: string }>('/api/devto/connection', {
+      method: 'POST',
+      body: JSON.stringify({ apiKey }),
+    }),
+  disconnectDevTo: () => apiFetch<void>('/api/devto/connection', { method: 'DELETE' }),
+  publishToDevTo: (id: number) =>
+    apiFetch<BlogPostDetail>(`/api/blog-posts/${id}/publish-to-devto`, { method: 'POST' }),
   portfolioDraft: () => apiFetch<PortfolioDraft>('/api/portfolio-draft'),
   generatePortfolioDraft: (sections: PortfolioSection[]) =>
     apiFetch<PortfolioDraft>('/api/portfolio-draft/generate', {
