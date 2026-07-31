@@ -18,7 +18,7 @@ function BlogPostDetailPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { me } = useAppData()
-  const [publishingToTistory, setPublishingToTistory] = useState(false)
+  const [publishingToDevTo, setPublishingToDevTo] = useState(false)
 
   useEffect(() => {
     api
@@ -62,15 +62,15 @@ function BlogPostDetailPage() {
     navigate('/blog')
   }
 
-  async function handlePublishToTistory() {
-    setPublishingToTistory(true)
+  async function handlePublishToDevTo() {
+    setPublishingToDevTo(true)
     try {
-      const updated = await api.publishToTistory(postId)
+      const updated = await api.publishToDevTo(postId)
       setPost(updated)
     } catch (err) {
       setError((err as Error).message)
     } finally {
-      setPublishingToTistory(false)
+      setPublishingToDevTo(false)
     }
   }
 
@@ -135,24 +135,24 @@ function BlogPostDetailPage() {
         <button type="button" onClick={handleDelete} style={buttonStyle('danger')}>
           삭제
         </button>
-        {post.tistoryUrl ? (
+        {post.devtoUrl ? (
           <a
-            href={post.tistoryUrl}
+            href={post.devtoUrl}
             target="_blank"
             rel="noreferrer"
             style={{ ...buttonStyle('secondary'), display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
           >
-            티스토리에서 보기
+            dev.to에서 보기
           </a>
         ) : (
-          me?.tistoryConnected && (
+          me?.devtoConnected && (
             <button
               type="button"
-              onClick={handlePublishToTistory}
-              disabled={publishingToTistory}
+              onClick={handlePublishToDevTo}
+              disabled={publishingToDevTo}
               style={buttonStyle('primary')}
             >
-              {publishingToTistory ? '올리는 중...' : '티스토리에 올리기'}
+              {publishingToDevTo ? '올리는 중...' : 'dev.to에 올리기'}
             </button>
           )
         )}
