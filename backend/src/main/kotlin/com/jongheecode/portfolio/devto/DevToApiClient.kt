@@ -13,11 +13,20 @@ class DevToApiClient(
 ) {
     private val restClient = restClientBuilder.baseUrl("https://dev.to").build()
 
+    companion object {
+        // dev.to가 Java 기본 User-Agent(Java/x.x.x)를 봇으로 판단해 403으로 차단하는 문제 회피용.
+        private const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    }
+
     fun fetchUsername(apiKey: String): String {
         val response = callDevTo {
             restClient.get()
-                .uri("/api/users/me")
+                // dev.to CDN이 이 엔드포인트의 401 응답을 api-key 헤더와 무관하게 URL 기준으로 캐싱하는
+                // 문제가 있어(Vary: api-key 없음), 매 요청마다 다른 쿼리 파라미터로 캐시를 우회한다.
+                .uri("/api/users/me?_={cacheBust}", System.nanoTime())
                 .header("api-key", apiKey)
+                .header("User-Agent", USER_AGENT)
                 .retrieve()
                 .body(String::class.java)
         }
@@ -37,6 +46,7 @@ class DevToApiClient(
             restClient.post()
                 .uri("/api/articles")
                 .header("api-key", apiKey)
+                .header("User-Agent", USER_AGENT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()

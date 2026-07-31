@@ -24,7 +24,7 @@ class DevToController(
         val username = try {
             devToApiClient.fetchUsername(request.apiKey)
         } catch (e: Exception) {
-            error("dev.to API 키가 올바르지 않습니다")
+            error("dev.to API 키가 올바르지 않습니다: ${e.message}")
         }
         user.devtoApiKey = request.apiKey
         user.devtoUsername = username
