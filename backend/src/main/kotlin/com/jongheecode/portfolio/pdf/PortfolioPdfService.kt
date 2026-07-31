@@ -1,8 +1,7 @@
 package com.jongheecode.portfolio.pdf
 
+import com.jongheecode.portfolio.markdown.MarkdownRenderer
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder
-import org.commonmark.parser.Parser
-import org.commonmark.renderer.html.HtmlRenderer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -11,16 +10,15 @@ import java.io.File
 
 @Service
 class PortfolioPdfService(
+    private val markdownRenderer: MarkdownRenderer,
     // 로컬(Windows) 실행 전제 MVP: 한글 렌더링을 위해 OS에 설치된 맑은 고딕을 그대로 씀.
     // 다른 OS/서버에 배포할 때는 임베드 가능한 한글 폰트 파일을 리소스로 번들링해야 함.
     @Value("\${pdf.font-path:C:/Windows/Fonts/malgun.ttf}") private val fontPath: String,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val markdownParser = Parser.builder().build()
-    private val htmlRenderer = HtmlRenderer.builder().build()
 
     fun render(markdown: String): ByteArray {
-        val bodyHtml = htmlRenderer.render(markdownParser.parse(markdown))
+        val bodyHtml = markdownRenderer.toHtml(markdown)
         val html = wrapHtml(bodyHtml)
 
         val output = ByteArrayOutputStream()

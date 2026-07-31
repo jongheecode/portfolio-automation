@@ -1,5 +1,7 @@
 # 티스토리 실제 발행 연동 Implementation Plan
 
+> **⚠️ 폐기됨 (2026-07-31)**: Task 1-8까지 구현/커밋 완료 후, 실사용 테스트 직전 Tistory Open API가 2024년 2월까지 순차 종료된 사실을 확인했다. 이 계획으로 만든 코드는 실제로 동작하지 않아 dev.to로 대체한다 — `docs/superpowers/specs/2026-07-31-devto-publish-design.md`와 그에 대응하는 plan 참고. Task 1(MarkdownRenderer 분리)만 여전히 유효하다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 블로그 초안을 실제 Tistory 블로그에 발행할 수 있게 OAuth 연동과 발행 API 호출을 추가한다.
