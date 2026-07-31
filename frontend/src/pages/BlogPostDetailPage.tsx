@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import MarkdownEditor from '../components/MarkdownEditor'
 import PublishedBadge from '../components/PublishedBadge'
+import { useAppData } from '../contexts/AppDataContext'
 import type { BlogPostDetail } from '../types'
 
 function BlogPostDetailPage() {
@@ -16,6 +17,8 @@ function BlogPostDetailPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { me } = useAppData()
+  const [publishingToTistory, setPublishingToTistory] = useState(false)
 
   useEffect(() => {
     api
@@ -57,6 +60,18 @@ function BlogPostDetailPage() {
   async function handleDelete() {
     await api.deleteBlogPost(postId)
     navigate('/blog')
+  }
+
+  async function handlePublishToTistory() {
+    setPublishingToTistory(true)
+    try {
+      const updated = await api.publishToTistory(postId)
+      setPost(updated)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setPublishingToTistory(false)
+    }
   }
 
   if (loading) return <p>불러오는 중...</p>
@@ -120,6 +135,27 @@ function BlogPostDetailPage() {
         <button type="button" onClick={handleDelete} style={buttonStyle('danger')}>
           삭제
         </button>
+        {post.tistoryUrl ? (
+          <a
+            href={post.tistoryUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{ ...buttonStyle('secondary'), display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            티스토리에서 보기
+          </a>
+        ) : (
+          me?.tistoryConnected && (
+            <button
+              type="button"
+              onClick={handlePublishToTistory}
+              disabled={publishingToTistory}
+              style={buttonStyle('primary')}
+            >
+              {publishingToTistory ? '올리는 중...' : '티스토리에 올리기'}
+            </button>
+          )
+        )}
       </div>
 
       <div>
