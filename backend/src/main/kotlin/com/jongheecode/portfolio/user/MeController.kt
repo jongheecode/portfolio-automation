@@ -17,8 +17,20 @@ class MeController(
         if (principal == null) return ResponseEntity.status(401).build()
         val githubId = (principal.attributes["id"] as Number).toLong()
         val user = userRepository.findByGithubId(githubId) ?: return ResponseEntity.status(401).build()
-        return ResponseEntity.ok(MeResponse(user.username, user.avatarUrl))
+        return ResponseEntity.ok(
+            MeResponse(
+                username = user.username,
+                avatarUrl = user.avatarUrl,
+                tistoryConnected = user.tistoryAccessToken != null,
+                tistoryBlogName = user.tistoryBlogName,
+            ),
+        )
     }
 }
 
-data class MeResponse(val username: String, val avatarUrl: String?)
+data class MeResponse(
+    val username: String,
+    val avatarUrl: String?,
+    val tistoryConnected: Boolean,
+    val tistoryBlogName: String?,
+)

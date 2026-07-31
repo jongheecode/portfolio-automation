@@ -28,6 +28,9 @@ class User(
     @Column(nullable = false, length = 512)
     var accessToken: String,
 
+    var tistoryAccessToken: String? = null,
+    var tistoryBlogName: String? = null,
+
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),
 )

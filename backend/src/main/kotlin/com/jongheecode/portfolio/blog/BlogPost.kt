@@ -34,6 +34,8 @@ class BlogPost(
     @Column(nullable = false)
     var published: Boolean = false,
 
+    var tistoryUrl: String? = null,
+
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),
 )
