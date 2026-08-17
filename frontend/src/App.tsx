@@ -1,4 +1,5 @@
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom'
+import { OverlayProvider } from './overlay/OverlayContext'
 import AppShell from './components/AppShell'
 import { AppDataProvider, useAppData } from './contexts/AppDataContext'
 import BlogPage from './pages/BlogPage'
@@ -21,7 +22,8 @@ function App() {
   return (
     <AppDataProvider>
       <BrowserRouter>
-        <Routes>
+        <OverlayProvider>
+          <Routes>
           <Route path="/" element={<RootRoute />} />
           <Route element={<AppShell />}>
             <Route path="/dashboard" element={<DashboardPage />} />
@@ -33,6 +35,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
+        </OverlayProvider>
       </BrowserRouter>
     </AppDataProvider>
   )

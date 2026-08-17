@@ -1,4 +1,13 @@
-function PublishedBadge({ published }: { published: boolean }) {
+function PublishedBadge({
+  published,
+  status,
+}: {
+  published: boolean
+  status?: 'draft' | 'published' | 'failed' | null
+}) {
+  const kind = status ?? (published ? 'published' : 'draft')
+  const label = kind === 'published' ? '발행됨' : kind === 'failed' ? '실패' : '초안'
+  const color = kind === 'published' ? 'var(--green)' : kind === 'failed' ? 'var(--act-plan)' : 'var(--muted)'
   return (
     <span
       style={{
@@ -7,11 +16,11 @@ function PublishedBadge({ published }: { published: boolean }) {
         padding: '3px 10px',
         borderRadius: 999,
         flexShrink: 0,
-        color: published ? 'var(--green)' : 'var(--muted)',
-        background: published ? 'color-mix(in srgb, var(--green) 16%, transparent)' : 'var(--panel2)',
+        color,
+        background: kind === 'draft' ? 'var(--panel2)' : `color-mix(in srgb, ${color} 16%, transparent)`,
       }}
     >
-      {published ? '발행됨' : '초안'}
+      {label}
     </span>
   )
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
@@ -30,6 +31,14 @@ class User(
 
     var devtoApiKey: String? = null,
     var devtoUsername: String? = null,
+
+    @ColumnDefault("'never'")
+    var lastSyncKind: String = "never",
+    var lastSyncedAt: Instant? = null,
+    var lastSyncAttemptAt: Instant? = null,
+    var lastSyncErrorCode: String? = null,
+    @ColumnDefault("true")
+    var autoSync: Boolean = true,
 
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),

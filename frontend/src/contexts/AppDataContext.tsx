@@ -8,10 +8,19 @@ interface AppDataContextValue {
   error: string | null
   trackedRepos: TrackedRepo[]
   commitsByRepo: Record<number, CommitRecord[]>
-  trackRepo: (owner: string, name: string, language: string | null, description: string | null) => Promise<void>
+  reload: () => Promise<Record<number, CommitRecord[]>>
+  trackRepo: (
+    owner: string,
+    name: string,
+    language: string | null,
+    description: string | null,
+    isPrivate?: boolean,
+  ) => Promise<void>
   untrackRepo: (id: number) => Promise<void>
   setPortfolioInclusion: (id: number, include: boolean) => Promise<void>
+  setAiScope: (id: number, enabled: boolean) => Promise<void>
   syncRepo: (id: number) => Promise<number>
+  syncAllRepos: () => Promise<{ repoCount: number; savedCount: number; commitsByRepo: Record<number, CommitRecord[]> }>
   logout: () => Promise<void>
   clearError: () => void
   isAddRepoOpen: boolean
@@ -29,18 +38,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [commitsByRepo, setCommitsByRepo] = useState<Record<number, CommitRecord[]>>({})
   const [isAddRepoOpen, setAddRepoOpen] = useState(false)
 
-  const loadCommits = useCallback(async (repos: TrackedRepo[]) => {
-    const entries = await Promise.all(
-      repos.map(async (repo) => [repo.id, await api.commits(repo.id)] as const),
-    )
-    setCommitsByRepo(Object.fromEntries(entries))
-  }, [])
-
   const loadAll = useCallback(async () => {
     const repos = await api.trackedRepos()
     setTrackedRepos(repos)
-    await loadCommits(repos)
-  }, [loadCommits])
+    const entries = await Promise.all(
+      repos.map(async (repo) => [repo.id, await api.commits(repo.id)] as const),
+    )
+    const map = Object.fromEntries(entries)
+    setCommitsByRepo(map)
+    return map
+  }, [])
 
   useEffect(() => {
     api
@@ -53,9 +60,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false))
   }, [loadAll])
 
-  async function trackRepo(owner: string, name: string, language: string | null, description: string | null) {
+  async function trackRepo(
+    owner: string,
+    name: string,
+    language: string | null,
+    description: string | null,
+    isPrivate = false,
+  ) {
     try {
-      await api.trackRepo(owner, name, language, description)
+      await api.trackRepo(owner, name, language, description, isPrivate)
       await loadAll()
     } catch (err) {
       setError((err as Error).message)
@@ -85,6 +98,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function setAiScope(id: number, enabled: boolean) {
+    try {
+      const updated = await api.setAiScope(id, enabled)
+      setTrackedRepos((prev) => prev.map((repo) => (repo.id === id ? updated : repo)))
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
   async function syncRepo(id: number) {
     try {
       const result = await api.syncRepo(id)
@@ -93,6 +115,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setError((err as Error).message)
       return 0
+    }
+  }
+
+  async function syncAllRepos() {
+    try {
+      const result = await api.syncAllRepos()
+      const map = await loadAll()
+      return { ...result, commitsByRepo: map }
+    } catch (err) {
+      setError((err as Error).message)
+      return { repoCount: 0, savedCount: 0, commitsByRepo: {} }
     }
   }
 
@@ -111,10 +144,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         error,
         trackedRepos,
         commitsByRepo,
+        reload: loadAll,
         trackRepo,
         untrackRepo,
         setPortfolioInclusion,
+        setAiScope,
         syncRepo,
+        syncAllRepos,
         logout,
         clearError: () => setError(null),
         isAddRepoOpen,

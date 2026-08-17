@@ -35,7 +35,7 @@ function AddRepoModal() {
       await untrackRepo(tracked.id)
     } else {
       const [owner] = repo.fullName.split('/')
-      await trackRepo(owner, repo.name, repo.language, repo.description)
+      await trackRepo(owner, repo.name, repo.language, repo.description, repo.isPrivate)
     }
   }
 
@@ -85,7 +85,7 @@ function AddRepoModal() {
             </button>
           </div>
           <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--muted)' }}>
-            추적할 레포를 선택하면 커밋 기록을 자동으로 수집합니다.
+            개인 레포와 조직 레포를 같이 보여 줍니다. 조직 레포가 없으면 GitHub에서 이 앱에 조직 접근을 허용한 뒤 다시 로그인해 주세요.
           </p>
         </div>
 

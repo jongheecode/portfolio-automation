@@ -23,3 +23,10 @@ export function languageColor(language: string | null): string {
   if (!language) return '#8a8a94'
   return LANGUAGE_COLORS[language] ?? '#8a8a94'
 }
+
+export function repoColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  const hue = Math.abs(hash) % 360
+  return `oklch(0.74 0.16 ${hue})`
+}

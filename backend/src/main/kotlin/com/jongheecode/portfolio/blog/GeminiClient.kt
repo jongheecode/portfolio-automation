@@ -14,6 +14,13 @@ data class GeminiGenerateResponse(val candidates: List<GeminiCandidate>?)
 
 data class GeneratedPost(val title: String, val content: String)
 
+data class GeneratedWeekPack(
+    val title: String,
+    val content: String,
+    val linkedin: String,
+    val twitter: String,
+)
+
 data class PortfolioRepoInput(
     val fullName: String,
     val description: String?,
@@ -34,6 +41,11 @@ class GeminiClient(
     fun generatePost(repoName: String, commitSummaries: List<String>): GeneratedPost {
         val text = callGemini(buildPrompt(repoName, commitSummaries))
         return parseGeneratedPost(text)
+    }
+
+    fun generateWeekPack(commitSummaries: List<String>): GeneratedWeekPack {
+        val text = callGemini(buildWeekPrompt(commitSummaries))
+        return parseGeneratedWeekPack(text)
     }
 
     fun generatePortfolioDraft(sections: List<String>, repos: List<PortfolioRepoInput>): String {
@@ -130,6 +142,35 @@ class GeminiClient(
         val end = text.lastIndexOf('}')
         if (start == -1 || end == -1 || end < start) return text
         return text.substring(start, end + 1)
+    }
+
+    private fun parseGeneratedWeekPack(text: String): GeneratedWeekPack {
+        val node = objectMapper.readTree(extractJson(text))
+        return GeneratedWeekPack(
+            title = node.get("title")?.asText() ?: "제목 없음",
+            content = node.get("content")?.asText() ?: text,
+            linkedin = node.get("linkedin")?.asText().orEmpty(),
+            twitter = node.get("twitter")?.asText().orEmpty(),
+        )
+    }
+
+    private fun buildWeekPrompt(commitSummaries: List<String>): String {
+        val commitsBlock = commitSummaries.joinToString("\n") { "- $it" }
+        return """
+            아래는 이번 한 주 동안의 GitHub 커밋 목록입니다.
+            이 커밋들을 바탕으로 개발자가 외부에 올릴 초안 3종을 한국어로 작성해줘.
+
+            요구사항:
+            - 블로그 content는 실제로 어떤 기능/문제를 다뤘는지 자연스러운 산문 (커밋 나열 금지)
+            - 과장된 수식어 없이 담백하게
+            - linkedin은 150~250자, 해시태그 3개 이하
+            - twitter는 트윗 3~5개, 각 280자 이내, 트윗 사이를 빈 줄 두 개(\n\n)로 구분
+            - 응답은 반드시 다음 JSON만: {"title":"블로그 제목","content":"마크다운 본문","linkedin":"...","twitter":"..."}
+            - JSON 외의 다른 텍스트는 절대 포함하지 마
+
+            커밋 목록:
+            $commitsBlock
+        """.trimIndent()
     }
 
     private fun buildPrompt(repoName: String, commitSummaries: List<String>): String {

@@ -32,6 +32,13 @@ class TrackedRepoController(
             .map { it.toResponse(commitRecordRepository.countByTrackedRepo(it)) }
     }
 
+    @PostMapping("/sync-all")
+    fun syncAll(@AuthenticationPrincipal principal: OAuth2User): SyncAllResponse {
+        val user = userRepository.currentUser(principal)
+        val (repoCount, savedCount) = commitSyncService.syncAll(user)
+        return SyncAllResponse(repoCount = repoCount, savedCount = savedCount)
+    }
+
     @PostMapping
     fun track(
         @AuthenticationPrincipal principal: OAuth2User,
@@ -51,9 +58,12 @@ class TrackedRepoController(
                 htmlUrl = "https://github.com/$fullName",
                 language = request.language,
                 description = request.description,
+                isPrivate = request.isPrivate,
+                aiScopeEnabled = !request.isPrivate,
             ),
         )
-        return saved.toResponse(0)
+        val savedCount = commitSyncService.sync(saved, user.accessToken)
+        return saved.toResponse(savedCount.toLong())
     }
 
     @DeleteMapping("/{id}")
@@ -87,6 +97,20 @@ class TrackedRepoController(
         return saved.toResponse(commitRecordRepository.countByTrackedRepo(saved))
     }
 
+    @PutMapping("/{id}/ai-scope")
+    fun setAiScope(
+        @AuthenticationPrincipal principal: OAuth2User,
+        @PathVariable id: Long,
+        @RequestBody request: AiScopeRequest,
+    ): TrackedRepoResponse {
+        val user = userRepository.currentUser(principal)
+        val repo = trackedRepoRepository.findByIdAndUser(id, user)
+            ?: error("레포를 찾을 수 없습니다: $id")
+        repo.aiScopeEnabled = request.enabled
+        val saved = trackedRepoRepository.save(repo)
+        return saved.toResponse(commitRecordRepository.countByTrackedRepo(saved))
+    }
+
     @GetMapping("/{id}/commits")
     fun commits(@AuthenticationPrincipal principal: OAuth2User, @PathVariable id: Long): List<CommitRecordResponse> {
         val user = userRepository.currentUser(principal)
@@ -101,8 +125,10 @@ data class TrackRepoRequest(
     val name: String,
     val language: String? = null,
     val description: String? = null,
+    val isPrivate: Boolean = false,
 )
 data class SyncResponse(val savedCount: Int)
+data class SyncAllResponse(val repoCount: Int, val savedCount: Int)
 data class PortfolioSelectionRequest(val include: Boolean)
 
 data class TrackedRepoResponse(
@@ -116,10 +142,15 @@ data class TrackedRepoResponse(
     val commitCount: Long,
     val includeInPortfolio: Boolean,
     val lastSyncedAt: Instant?,
+    val isPrivate: Boolean = false,
+    val aiScopeEnabled: Boolean = true,
 )
 
 private fun TrackedRepo.toResponse(commitCount: Long) =
-    TrackedRepoResponse(id, owner, name, fullName, htmlUrl, language, description, commitCount, includeInPortfolio, lastSyncedAt)
+    TrackedRepoResponse(
+        id, owner, name, fullName, htmlUrl, language, description, commitCount,
+        includeInPortfolio, lastSyncedAt, isPrivate, aiScopeEnabled,
+    )
 
 data class CommitRecordResponse(
     val id: Long,
@@ -128,6 +159,14 @@ data class CommitRecordResponse(
     val authorName: String,
     val committedAt: Instant,
     val htmlUrl: String,
+    val additions: Int = 0,
+    val deletions: Int = 0,
+    val isMerge: Boolean = false,
+    val isBot: Boolean = false,
 )
 
-private fun CommitRecord.toResponse() = CommitRecordResponse(id, sha, message, authorName, committedAt, htmlUrl)
+private fun CommitRecord.toResponse() = CommitRecordResponse(
+    id, sha, message, authorName, committedAt, htmlUrl, additions, deletions, isMerge, isBot,
+)
+
+data class AiScopeRequest(val enabled: Boolean)

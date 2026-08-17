@@ -10,10 +10,15 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
+import java.time.LocalDate
 
 @Entity
-@Table(name = "blog_posts")
+@Table(
+    name = "blog_posts",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "week_start"])],
+)
 class BlogPost(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +39,21 @@ class BlogPost(
     @Column(nullable = false)
     var published: Boolean = false,
 
+    var publishStatus: String = "draft",
+
     var devtoUrl: String? = null,
+
+    var publishedUrl: String? = null,
+
+    @Column(columnDefinition = "TEXT")
+    var linkedinContent: String? = null,
+
+    @Column(columnDefinition = "TEXT")
+    var twitterContent: String? = null,
+
+    var weekStart: LocalDate? = null,
+
+    var updatedAt: Instant = Instant.now(),
 
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),

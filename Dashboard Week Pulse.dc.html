@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #191E22; }
+  * { box-sizing: border-box; }
+  a { color: #6FB6F0; text-decoration: none; }
+  a:hover { color: #9BD0F7; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, a:focus-visible { outline: 2px solid #8AC5F5; outline-offset: 2px; }
+  @keyframes traceIn { from { stroke-dashoffset: 2600 } to { stroke-dashoffset: 0 } }
+  @keyframes spin { to { transform: rotate(360deg) } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: linear-gradient(180deg, #1E242A 0%, #191E22 340px); color: #F0F4F5; font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif; -webkit-font-smoothing: antialiased; padding: 26px 32px 56px">
+
+  <header style="display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding-bottom: 16px">
+    <div style="display: flex; align-items: center; gap: 8px">
+      <button onClick="{{ prevWeek }}" aria-label="이전 주" style="{{ navStyle }}" style-hover="border-color:#5A676F; background:#2C343B; color:#FFFFFF">‹</button>
+      <button onClick="{{ nextWeek }}" aria-label="다음 주" style="{{ navStyle }}" style-hover="border-color:#5A676F; background:#2C343B; color:#FFFFFF">›</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <div style="font-size: 20px; font-weight: 600; letter-spacing: -0.015em; color: #F5F8F9">{{ weekRange }}</div>
+      <div style="font-size: 12.5px; color: #96A3A9">{{ weekMeta }}</div>
+    </div>
+
+    <button onClick="{{ goToday }}" style="height: 34px; padding: 0 14px; background: transparent; border: 1px solid #3A444C; border-radius: 8px; color: #C3CDD1; cursor: pointer; font-size: 13.5px" style-hover="border-color:#5A676F; color:#FFFFFF">오늘</button>
+
+    <div style="flex: 1; min-width: 12px"></div>
+
+    <div style="display: flex; align-items: center; gap: 10px">
+      <button onClick="{{ doSync }}" style="{{ syncBtnStyle }}" style-hover="border-color:#5A676F; background:#2C343B">
+        <span style="{{ syncDotStyle }}"></span>
+        {{ syncBtnLabel }}
+      </button>
+      <button onClick="{{ makeDraft }}" style="{{ draftBtnStyle }}" style-hover="background:#8AC5F5; border-color:#8AC5F5">
+        <span>초안 만들기</span>
+        <span style="{{ draftScopeStyle }}">{{ draftScope }}</span>
+      </button>
+    </div>
+  </header>
+
+  <div style="{{ statusRowStyle }}">
+    <span style="{{ statusIconStyle }}"></span>
+    <span style="font-size: 13px; color: {{ statusTextColor }}">{{ statusText }}</span>
+    <span style="{{ statusHintStyle }}">{{ statusHint }}</span>
+    <button onClick="{{ doSync }}" style="{{ statusActionStyle }}" style-hover="color:#FFFFFF; border-color:#8AC5F5">{{ statusAction }}</button>
+    <span style="flex: 1"></span>
+    <span style="{{ shortcutHintStyle }}">← → 주 이동 · 1–7 요일 · T 오늘</span>
+  </div>
+
+  <!-- ── 빈 상태 ①: 추적 레포가 없음 ─────────────────────────── -->
+  <div style="{{ noRepoStyle }}">
+    <div style="max-width: 460px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="width: 10px; height: 10px; border-radius: 3px; background: #6FB6F0"></span>
+        <span style="width: 10px; height: 10px; border-radius: 3px; background: #39434A"></span>
+        <span style="width: 10px; height: 10px; border-radius: 3px; background: #39434A"></span>
+      </div>
+      <div style="font-size: 19px; font-weight: 600; color: #F0F4F5">추적할 레포를 먼저 등록해요</div>
+      <div style="font-size: 14px; line-height: 1.6; color: #B5C0C5; text-wrap: pretty">레포를 하나 추가하면 커밋을 모아 이번 주를 그려줍니다. 나중에 언제든 추가하거나 뺄 수 있어요.</div>
+      <button style="height: 40px; padding: 0 18px; background: #6FB6F0; border: 0; border-radius: 8px; color: #10171C; font-size: 14px; font-weight: 600; cursor: pointer" style-hover="background:#8AC5F5">레포 등록하기</button>
+    </div>
+  </div>
+
+  <div style="{{ boardStyle }}">
+
+    <aside style="{{ railStyle }}">
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">습관</div>
+        <sc-for list="{{ habits }}" as="h" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #293137">
+            <div style="flex: 1; font-size: 14px; color: #D8E0E3">{{ h.name }}</div>
+            <div style="display: flex; align-items: center; gap: 3px">
+              <sc-for list="{{ h.dots }}" as="dot" hint-placeholder-count="7">
+                <span style="{{ dot.style }}"></span>
+              </sc-for>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #A3AFB4; min-width: 26px; text-align: right">{{ h.label }}</div>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">이번 주 계획</div>
+          <div style="font-size: 12px; color: #7C888E">{{ planProgress }}</div>
+        </div>
+        <sc-for list="{{ plans }}" as="p" hint-placeholder-count="4">
+          <button onClick="{{ p.select }}" style="display: flex; align-items: flex-start; gap: 10px; padding: 8px 8px 8px 0; background: transparent; border: 0; border-radius: 8px; text-align: left; cursor: pointer; width: 100%" style-hover="background:#212830">
+            <span style="{{ p.barStyle }}"></span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: 14px; line-height: 1.45; color: #CBD4D8; text-wrap: pretty">{{ p.title }}</span>
+              <span style="font-size: 12px; color: {{ p.metaColor }}">{{ p.meta }}</span>
+            </span>
+            <span style="font-size: 12.5px; color: #96A3A9; padding-top: 2px">{{ p.day }}</span>
+          </button>
+        </sc-for>
+      </section>
+    </aside>
+
+    <main style="display: flex; flex-direction: column; gap: 30px; min-width: 0">
+
+      <!-- ── 주간 신호 ─────────────────────────────────────── -->
+      <section style="position: relative; background: #212830; border: 1px solid #303941; border-radius: 14px; padding: 18px 18px 14px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 0 2px 6px">
+          <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">이번 주 신호</div>
+          <div style="display: flex; align-items: center; gap: 18px">
+            <div style="display: flex; align-items: center; gap: 7px"><span style="width: 9px; height: 9px; background: #6FB6F0; border-radius: 3px"></span><span style="font-size: 13px; color: #B5C0C5">커밋</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F0F4F5">{{ weekCommits }}</span></div>
+            <div style="display: flex; align-items: center; gap: 7px"><span style="width: 9px; height: 9px; background: #F0B45E; border-radius: 3px"></span><span style="font-size: 13px; color: #B5C0C5">계획</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F0F4F5">{{ weekPlans }}</span></div>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 1400 116" role="img" aria-label="{{ waveAria }}" style="width: 100%; height: auto; display: block; overflow: visible; opacity: {{ waveOpacity }}">
+          <defs>
+            <linearGradient id="wkArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6FB6F0" stop-opacity="0.34" />
+              <stop offset="100%" stop-color="#6FB6F0" stop-opacity="0.02" />
+            </linearGradient>
+          </defs>
+          <path d="{{ wkArea }}" fill="url(#wkArea)" />
+          <path d="{{ wkLine }}" fill="none" stroke="#6FB6F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="{{ traceStyle }}" />
+          <line x1="0" y1="86" x2="1400" y2="86" stroke="#39434A" stroke-width="1" />
+          <sc-for list="{{ wkPoints }}" as="wp" hint-placeholder-count="7">
+            <g>
+              <line x1="{{ wp.x }}" y1="{{ wp.y }}" x2="{{ wp.x }}" y2="86" stroke="#6FB6F0" stroke-opacity="{{ wp.stemOpacity }}" stroke-width="1" />
+              <rect x="{{ wp.planX }}" y="88" width="18" height="{{ wp.planH }}" rx="3" fill="#F0B45E" opacity="{{ wp.planOpacity }}" />
+              <circle cx="{{ wp.x }}" cy="{{ wp.y }}" r="{{ wp.r }}" fill="{{ wp.fill }}" stroke="#212830" stroke-width="3" />
+            </g>
+          </sc-for>
+          <line x1="{{ wkSelX }}" y1="0" x2="{{ wkSelX }}" y2="112" stroke="#8AC5F5" stroke-opacity="0.35" stroke-width="1.5" />
+        </svg>
+
+        <div style="{{ dayGridStyle }}">
+          <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+            <button onClick="{{ d.select }}" aria-pressed="{{ d.isSelected }}" aria-label="{{ d.aria }}" style="{{ d.cellStyle }}" style-hover="border-color:#5A676F">
+              <div style="display: flex; align-items: baseline; gap: 6px">
+                <span style="font-size: 13.5px; font-weight: 600; color: {{ d.labelColor }}; white-space: nowrap">{{ d.weekday }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 15px; color: {{ d.dateColor }}; white-space: nowrap">{{ d.date }}</span>
+                <span style="{{ d.todayStyle }}">오늘</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="display: flex; align-items: center; gap: 5px; opacity: {{ d.commitChipOpacity }}">
+                  <span style="width: 8px; height: 8px; background: #6FB6F0; border-radius: 3px; flex: none"></span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F0F4F5; flex: none">{{ d.commits }}</span>
+                  <span style="font-size: 12px; color: #A3AFB4; white-space: nowrap; flex: none">커밋</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 5px; opacity: {{ d.planChipOpacity }}">
+                  <span style="width: 8px; height: 8px; background: #F0B45E; border-radius: 3px; flex: none"></span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F0F4F5; flex: none">{{ d.plans }}</span>
+                  <span style="font-size: 12px; color: #A3AFB4; white-space: nowrap; flex: none">계획</span>
+                </div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+
+        <!-- ── 빈 상태 ②: 아직 동기화 안 함 (스트립 위에 덮임) ── -->
+        <div style="{{ notSyncedStyle }}">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; max-width: 380px">
+            <div style="font-size: 16px; font-weight: 600; color: #F0F4F5">아직 가져온 커밋이 없어요</div>
+            <div style="font-size: 13.5px; line-height: 1.6; color: #B5C0C5">한 번 가져오면 이후에는 자동으로 따라옵니다.</div>
+            <button onClick="{{ doSync }}" style="height: 38px; padding: 0 16px; background: #6FB6F0; border: 0; border-radius: 8px; color: #10171C; font-size: 14px; font-weight: 600; cursor: pointer" style-hover="background:#8AC5F5">GitHub에서 가져오기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 빈 상태 ③: 커밋 0인 주 (조용하게, 대안 제시) ───── -->
+      <section style="{{ zeroWeekStyle }}">
+        <div style="font-size: 14.5px; color: #D8E0E3">이번 주는 커밋이 없어요.</div>
+        <div style="font-size: 13.5px; color: #96A3A9">{{ zeroWeekHint }}</div>
+        <button onClick="{{ prevWeek }}" style="height: 34px; padding: 0 14px; background: transparent; border: 1px solid #3A444C; border-radius: 8px; color: #C3CDD1; font-size: 13.5px; cursor: pointer" style-hover="border-color:#5A676F; color:#FFFFFF">지난주 보기</button>
+      </section>
+
+      <!-- ── 선택한 날 상세 ────────────────────────────────── -->
+      <section style="{{ detailSectionStyle }}">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 4px">
+          <div style="font-size: 15px; font-weight: 600; color: #F0F4F5">{{ detailLabel }}</div>
+          <div style="font-size: 13px; color: #96A3A9">{{ detailCount }}</div>
+          <div style="flex: 1; min-width: 20px; height: 1px; background: #293137"></div>
+          <button onClick="{{ toggleMerges }}" aria-pressed="{{ excludeMerges }}" style="{{ mergeToggleStyle }}" style-hover="border-color:#5A676F">
+            <span style="{{ mergeCheckStyle }}"></span>
+            머지 · 봇 커밋 제외
+          </button>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <sc-for list="{{ repoFilters }}" as="rf" hint-placeholder-count="3">
+              <button onClick="{{ rf.select }}" aria-pressed="{{ rf.active }}" style="{{ rf.style }}" style-hover="border-color:#5A676F">{{ rf.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <sc-for list="{{ detail }}" as="c" hint-placeholder-count="4">
+          <a href="{{ c.url }}" target="_blank" rel="noreferrer noopener" style="display: grid; grid-template-columns: {{ detailCols }}; gap: 14px; align-items: center; padding: 11px 12px; border-radius: 10px; border: 1px solid transparent; color: inherit" style-hover="background:#212830; border-color:#303941">
+            <span style="{{ detailMainStyle }}">
+              <span style="display: flex; align-items: center; gap: 9px; min-width: 0">
+                <span style="width: 3px; height: 15px; background: #6FB6F0; border-radius: 2px; flex: none"></span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #9EC4E4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ c.repo }}</span>
+              </span>
+              <span style="font-size: 14.5px; color: #DDE4E7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0">{{ c.message }}</span>
+            </span>
+            <span style="{{ detailDiffStyle }}">{{ c.diff }}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #96A3A9; text-align: right">{{ c.time }}</span>
+          </a>
+        </sc-for>
+
+        <div style="{{ emptyDetailStyle }}">{{ emptyDetailText }}</div>
+      </section>
+
+      <!-- ── 초안 ──────────────────────────────────────────── -->
+      <section style="{{ draftsStyle }}">
+        <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 12px">
+          <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">초안</div>
+          <div style="flex: 1; height: 1px; background: #293137"></div>
+          <a href="#" style="font-size: 12.5px; color: #96A3A9" style-hover="color:#F0F4F5">발행 이력</a>
+        </div>
+        <div style="{{ draftGridStyle }}">
+          <sc-for list="{{ drafts }}" as="dr" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #212830; border: 1px solid #303941; border-radius: 12px; cursor: pointer" style-hover="border-color:#4A7F70; background:#232C31">
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="width: 8px; height: 8px; background: #5FD3B1; border-radius: 3px"></span>
+                <span style="font-size: 12.5px; font-weight: 600; color: #5FD3B1">{{ dr.channel }}</span>
+                <span style="flex: 1"></span>
+                <span style="{{ dr.badgeStyle }}">{{ dr.status }}</span>
+              </div>
+              <div style="font-size: 14.5px; line-height: 1.5; color: #E7EDEF; text-wrap: pretty">{{ dr.title }}</div>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="font-size: 12.5px; color: #96A3A9">{{ dr.meta }}</span>
+                <span style="{{ dr.linkStyle }}">{{ dr.linkLabel }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- ── 최근 12주 ─────────────────────────────────────── -->
+      <section style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+          <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">최근 12주 커밋</div>
+          <div style="font-size: 12.5px; color: #96A3A9">{{ chartMeta }}</div>
+        </div>
+        <div style="position: relative; background: #212830; border: 1px solid #303941; border-radius: 14px; padding: 16px 18px 12px">
+          <svg viewBox="0 0 1200 200" role="img" aria-label="{{ chartAria }}" onMouseLeave="{{ clearHover }}" style="width: 100%; height: auto; display: block; overflow: visible">
+            <defs>
+              <linearGradient id="wpArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6FB6F0" stop-opacity="0.30" />
+                <stop offset="100%" stop-color="#6FB6F0" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="170" x2="1200" y2="170" stroke="#39434A" stroke-width="1" />
+            <line x1="0" y1="{{ avgY }}" x2="1130" y2="{{ avgY }}" stroke="#8B989E" stroke-width="1" stroke-dasharray="4 6" />
+            <text x="1140" y="{{ avgLabelY }}" font-family="JetBrains Mono, monospace" font-size="11.5" fill="#8B989E">평균 {{ avgValue }}</text>
+            <path d="{{ areaPath }}" fill="url(#wpArea)" />
+            <path d="{{ linePath }}" fill="none" stroke="#6FB6F0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="{{ traceStyle }}" />
+            <line x1="{{ selX }}" y1="0" x2="{{ selX }}" y2="170" stroke="#8AC5F5" stroke-opacity="0.35" stroke-width="1.5" />
+            <sc-for list="{{ points }}" as="pt" hint-placeholder-count="12">
+              <g onClick="{{ pt.select }}" onMouseEnter="{{ pt.hover }}" style="cursor: pointer">
+                <rect x="{{ pt.hitX }}" y="0" width="{{ pt.hitW }}" height="196" fill="transparent" />
+                <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="{{ pt.r }}" fill="{{ pt.fill }}" stroke="#212830" stroke-width="3" />
+                <text x="{{ pt.x }}" y="193" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11.5" fill="{{ pt.labelFill }}">{{ pt.label }}</text>
+                <text x="{{ pt.x }}" y="{{ pt.valueY }}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#F0F4F5" opacity="{{ pt.valueOpacity }}">{{ pt.value }}</text>
+              </g>
+            </sc-for>
+          </svg>
+          <div style="{{ tipStyle }}">
+            <span style="font-size: 12.5px; color: #96A3A9">{{ tipRange }}</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F0F4F5">{{ tipValue }}</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 0 2px">
+          <span style="font-size: 12.5px; color: #96A3A9">{{ streakText }}</span>
+        </div>
+      </section>
+
+      <!-- ── 데이터 사용 고지 ──────────────────────────────── -->
+      <section style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #1D2429; border: 1px solid #293137; border-radius: 10px; flex-wrap: wrap">
+        <span style="width: 7px; height: 7px; border-radius: 50%; background: #8B989E; flex: none"></span>
+        <span style="font-size: 12.5px; line-height: 1.5; color: #A3AFB4">초안을 만들 때 선택한 레포의 커밋 메시지가 Gemini로 전송됩니다. private 레포는 기본으로 제외돼요.</span>
+        <a href="#" style="font-size: 12.5px; color: #9EC4E4">대상 레포 고르기</a>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;준비됨&quot;,&quot;레포 없음&quot;,&quot;동기화 전&quot;,&quot;활동 없는 주&quot;,&quot;동기화 실패&quot;],&quot;default&quot;:&quot;준비됨&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;화면 상태&quot;},&quot;autoSync&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;화면 상태&quot;},&quot;showDrafts&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;내용&quot;},&quot;motion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;모션&quot;},&quot;commitColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6FB6F0&quot;,&quot;options&quot;:[&quot;#6FB6F0&quot;,&quot;#7FD1AE&quot;,&quot;#9BA9F2&quot;,&quot;#F0B45E&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;활동 색&quot;}}">
+const WD = ['월','화','수','목','금','토','일'];
+const COMMITS = [
+  { repo: 'jonghee/portfolio-automation', message: 'feat: 주간 대시보드 요약 API 추가', add: 128, del: 12, merge: false },
+  { repo: 'jonghee/portfolio-automation', message: 'refactor: 커밋 동기화 스케줄러 분리', add: 86, del: 74, merge: false },
+  { repo: 'jonghee/kotlin-study', message: 'fix: 주 시작 요일 계산 오류 수정', add: 14, del: 9, merge: false },
+  { repo: 'jonghee/portfolio-automation', message: "Merge branch 'main' into feat/weekly-summary", add: 0, del: 0, merge: true },
+  { repo: 'jonghee/portfolio-automation', message: 'chore: Gemini 프롬프트 토큰 정리', add: 31, del: 44, merge: false },
+  { repo: 'jonghee/infra-notes', message: 'docs: 로컬 실행 순서 정리', add: 52, del: 3, merge: false },
+  { repo: 'jonghee/portfolio-automation', message: 'test: 동기화 중복 방지 테스트 보강', add: 96, del: 5, merge: false },
+  { repo: 'jonghee/portfolio-automation', message: 'perf: 레포별 커밋 조회 쿼리 인덱스 추가', add: 22, del: 6, merge: false },
+  { repo: 'jonghee/kotlin-study', message: 'feat: dev.to 발행 응답 로깅', add: 40, del: 11, merge: false }
+];
+
+class Component extends DCLogic {
+  state = { week: 11, day: 3, narrow: false, hoverWeek: -1, excludeMerges: true, repo: 'all', syncing: false };
+
+  componentDidMount() {
+    this.onKey = (e) => {
+      if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.key === 'ArrowLeft') this.setState(s => ({ week: Math.max(0, s.week - 1) }));
+      else if (e.key === 'ArrowRight') this.setState(s => ({ week: Math.min(11, s.week + 1) }));
+      else if (e.key === 't' || e.key === 'T') this.setState({ week: 11, day: 4 });
+      else if (/^[1-7]$/.test(e.key)) this.setState({ day: Number(e.key) - 1 });
+    };
+    this.onResize = () => this.setState({ narrow: window.innerWidth < 1000 });
+    window.addEventListener('keydown', this.onKey);
+    window.addEventListener('resize', this.onResize);
+    this.onResize();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('resize', this.onResize);
+  }
+
+  weeks() { return [14, 6, 22, 31, 9, 0, 18, 27, 12, 35, 21, 29]; }
+
+  weekDays(w) {
+    const base = [[5,1],[8,0],[3,2],[9,1],[6,0],[0,0],[2,1]];
+    const total = this.weeks()[w];
+    const sum = base.reduce((a, b) => a + b[0], 0);
+    return base.map((b, i) => ({
+      commits: total === 0 ? 0 : (i === 5 ? 0 : Math.max(0, Math.round(b[0] * total / sum))),
+      plans: b[1]
+    }));
+  }
+
+  smooth(pts) {
+    if (!pts.length) return '';
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || pts[i + 1];
+      d += ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(1)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(1)}, ${(p2.x - (p3.x - p1.x) / 6).toFixed(1)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(1)}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+  }
+
+  renderVals() {
+    const cCol = this.props.commitColor || '#6FB6F0';
+    const view = this.props.viewState || '준비됨';
+    const showDrafts = this.props.showDrafts !== false;
+    const motion = this.props.motion !== false;
+    const autoSync = this.props.autoSync !== false;
+
+    const noRepo = view === '레포 없음';
+    const notSynced = view === '동기화 전';
+    const syncError = view === '동기화 실패';
+    const forceZero = view === '활동 없는 주';
+
+    const narrow = this.state.narrow;
+    const w = forceZero ? 5 : this.state.week;
+    const selDay = this.state.day;
+    const series = this.weeks();
+    const dayData = notSynced ? Array.from({ length: 7 }, () => ({ commits: 0, plans: 0 })) : this.weekDays(w);
+
+    const monthStart = [6,13,20,27,4,11,18,25,1,8,15,22];
+    const monthOf = [5,5,5,5,6,6,6,6,7,7,7,7];
+    const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+    const mIdx = monthOf[w];
+    const dates = Array.from({ length: 7 }, (_, i) => monthStart[w] + i);
+    const todayIdx = w === 11 ? 4 : -1;
+
+    const weekCommits = dayData.reduce((a, d) => a + d.commits, 0);
+    const weekPlans = dayData.reduce((a, d) => a + d.plans, 0);
+    const maxC = Math.max(1, ...dayData.map(d => d.commits));
+    const zeroWeek = !noRepo && !notSynced && weekCommits === 0;
+
+    // ── 상단 7일 파형
+    const WV = 1400, colW = WV / 7, wkBase = 86, wkTop = 14;
+    const wkPts = dayData.map((d, i) => ({
+      x: Math.round(colW * (i + 0.5)),
+      y: Math.round(wkBase - (d.commits / maxC) * (wkBase - wkTop)),
+      v: d.commits
+    }));
+    const wkLine = this.smooth(wkPts);
+    const wkArea = `${wkLine} L ${wkPts[6].x} ${wkBase} L ${wkPts[0].x} ${wkBase} Z`;
+
+    const days = dayData.map((d, i) => {
+      const isSel = i === selDay, isToday = i === todayIdx;
+      return {
+        weekday: WD[i], date: String(dates[i]),
+        commits: d.commits, plans: d.plans, isSelected: isSel,
+        aria: `${WD[i]}요일 ${dates[i]}일, 커밋 ${d.commits}개, 계획 ${d.plans}개`,
+        select: () => this.setState({ day: i }),
+        commitChipOpacity: d.commits ? 1 : 0.4,
+        planChipOpacity: d.plans ? 1 : 0.4,
+        labelColor: isSel ? '#FFFFFF' : isToday ? cCol : '#B5C0C5',
+        dateColor: isSel ? '#FFFFFF' : '#96A3A9',
+        todayStyle: isToday ? `margin-left:auto;font-size:11px;white-space:nowrap;color:${isSel ? '#FFFFFF' : cCol}` : 'display:none',
+        cellStyle: [
+          'position:relative;display:flex;flex-direction:column;gap:12px;padding:13px 9px;text-align:left;cursor:pointer;border-radius:10px;transition:border-color .16s ease,background .16s ease',
+          `background:${isSel ? '#2B343C' : '#262E35'}`,
+          `border:1px solid ${isSel ? cCol : '#333C43'}`
+        ].join(';')
+      };
+    });
+
+    // ── 선택한 날 커밋: 머지·봇 제외 + 레포 필터
+    const raw = Array.from({ length: dayData[selDay].commits }, (_, i) => COMMITS[(selDay * 3 + i) % COMMITS.length]);
+    const repos = ['all', ...Array.from(new Set(raw.map(c => c.repo)))];
+    const filtered = raw.filter(c => (!this.state.excludeMerges || !c.merge) && (this.state.repo === 'all' || c.repo === this.state.repo));
+    const hiddenCount = raw.length - filtered.length;
+
+    const detail = filtered.map((c, i) => ({
+      repo: c.repo.split('/')[1],
+      message: c.message,
+      diff: `+${c.add} −${c.del}`,
+      time: `${String(9 + ((i * 3) % 12)).padStart(2, '0')}:${String((i * 17) % 60).padStart(2, '0')}`,
+      url: `https://github.com/${c.repo}/commits`
+    }));
+
+    // ── 계획 ↔ 커밋 연결
+    const planSpec = [
+      { title: '주간 요약 API 마무리', day: '월', dayIdx: 0, linked: 4 },
+      { title: '동기화 중복 방지 테스트', day: '수', dayIdx: 2, linked: 2 },
+      { title: 'dev.to 발행 흐름 점검', day: '목', dayIdx: 3, linked: 0 },
+      { title: '초안 프롬프트 다듬기', day: '일', dayIdx: 6, linked: 1 }
+    ];
+    const plans = planSpec.map(p => {
+      const done = p.linked > 0;
+      return {
+        title: p.title, day: p.day,
+        meta: done ? `커밋 ${p.linked}개로 진행됨` : '아직 연결된 커밋 없음',
+        metaColor: done ? '#9EC4E4' : '#7C888E',
+        barStyle: `width:4px;align-self:stretch;min-height:30px;border-radius:2px;margin-top:2px;background:${done ? cCol : '#F0B45E'}`,
+        select: () => this.setState({ day: p.dayIdx })
+      };
+    });
+    const donePlans = planSpec.filter(p => p.linked > 0).length;
+
+    // ── 12주 차트
+    const W = 1200, pad = 36, top = 26, bot = 170;
+    const maxW = Math.max(1, ...series);
+    const avg = Math.round(series.reduce((a, b) => a + b, 0) / series.length);
+    const pts = series.map((v, i) => ({
+      x: Math.round(pad + (i * (W - pad * 2)) / (series.length - 1)),
+      y: Math.round(bot - (v / maxW) * (bot - top)),
+      v
+    }));
+    const line = this.smooth(pts);
+    const area = `${line} L ${pts[11].x} ${bot} L ${pts[0].x} ${bot} Z`;
+    const step = (W - pad * 2) / (series.length - 1);
+    const avgY = Math.round(bot - (avg / maxW) * (bot - top));
+
+    const points = pts.map((p, i) => {
+      const isSel = i === w;
+      return {
+        x: p.x, y: p.y,
+        hitX: Math.round(p.x - step / 2), hitW: Math.round(step),
+        r: isSel ? 6.5 : 4,
+        fill: isSel ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol,
+        label: `${monthOf[i] + 1}/${monthStart[i]}`,
+        labelFill: isSel ? '#E7EDEF' : '#7C888E',
+        value: String(p.v), valueY: p.y - 16,
+        valueOpacity: isSel ? 1 : 0,
+        select: () => this.setState({ week: i, hoverWeek: -1 }),
+        hover: () => this.setState({ hoverWeek: i })
+      };
+    });
+
+    let streak = 0;
+    for (let i = series.length - 1; i >= 0 && series[i] > 0; i--) streak++;
+
+    const hv = this.state.hoverWeek;
+    const hvPct = hv >= 0 ? ((pts[hv].x / W) * 100) : 0;
+
+    // ── 동기화 상태줄
+    let statusText = autoSync ? '마지막 동기화 12분 전 · 자동 동기화 켜짐' : '마지막 동기화 12분 전 · 자동 동기화 꺼짐';
+    let statusColor = '#A3AFB4', statusIcon = '#5FD3B1', statusAction = '', statusHint = '';
+    if (notSynced) { statusText = '아직 한 번도 가져오지 않았어요'; statusIcon = '#8B989E'; statusAction = '지금 가져오기'; }
+    if (syncError) {
+      statusText = 'GitHub 토큰이 만료돼 가져오기가 멈췄어요';
+      statusHint = '2시간 전 시도 · 401';
+      statusColor = '#F0B45E'; statusIcon = '#F0B45E'; statusAction = 'GitHub 다시 연결';
+    }
+    if (this.state.syncing) { statusText = '커밋을 가져오는 중이에요'; statusIcon = cCol; statusAction = ''; statusHint = ''; }
+
+    const unwritten = 12;
+
+    return {
+      days, detail, points, plans,
+      wkLine, wkArea, wkSelX: wkPts[selDay].x,
+      wkPoints: wkPts.map((p, i) => ({
+        x: p.x, y: p.y,
+        r: i === selDay ? 7 : 4.5,
+        fill: i === selDay ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol,
+        stemOpacity: i === selDay ? 0.5 : 0.16,
+        planX: p.x - 9,
+        planH: dayData[i].plans ? 6 + dayData[i].plans * 7 : 0,
+        planOpacity: dayData[i].plans ? 0.95 : 0
+      })),
+      waveOpacity: notSynced ? 0.18 : 1,
+      waveAria: `${monthNames[mIdx]} ${dates[0]}일부터 ${dates[6]}일까지 커밋 ${weekCommits}개, 계획 ${weekPlans}개. 요일별: ` +
+        dayData.map((d, i) => `${WD[i]} ${d.commits}`).join(', '),
+
+      weekRange: `${monthNames[mIdx]} ${dates[0]}일 – ${monthNames[mIdx]} ${dates[6]}일`,
+      weekMeta: '월요일 시작 · 서울 기준',
+      weekCommits, weekPlans,
+      planProgress: `${donePlans}/${planSpec.length} 진행`,
+
+      navStyle: `width:38px;height:38px;display:grid;place-items:center;background:#252C33;border:1px solid #3A444C;border-radius:8px;font-size:17px;line-height:1;color:#C3CDD1;cursor:${noRepo ? 'not-allowed' : 'pointer'};opacity:${noRepo ? 0.45 : 1}`,
+
+      syncBtnStyle: 'height:38px;padding:0 16px;background:#252C33;border:1px solid #3A444C;border-radius:8px;color:#E2E9EB;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:9px',
+      syncBtnLabel: this.state.syncing ? '가져오는 중' : 'GitHub에서 가져오기',
+      syncDotStyle: this.state.syncing
+        ? `width:12px;height:12px;border-radius:50%;border:2px solid ${cCol};border-top-color:transparent;animation:spin .7s linear infinite`
+        : `width:7px;height:7px;border-radius:50%;background:${cCol};box-shadow:0 0 9px ${cCol}`,
+      doSync: () => {
+        this.setState({ syncing: true });
+        setTimeout(() => this.setState({ syncing: false }), 1400);
+      },
+
+      draftBtnStyle: `height:38px;padding:0 14px 0 18px;background:${cCol};border:1px solid ${cCol};border-radius:8px;color:#10171C;cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;opacity:${noRepo || notSynced ? 0.45 : 1}`,
+      draftScope: `미기록 커밋 ${unwritten}개`,
+      draftScopeStyle: 'font-size:12px;font-weight:500;padding:3px 8px;border-radius:20px;background:rgba(16,23,28,.18);white-space:nowrap',
+      makeDraft: () => {},
+
+      statusRowStyle: noRepo
+        ? 'display:none'
+        : 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:22px;background:#1D2429;border:1px solid #293137;border-radius:10px',
+      statusIconStyle: `width:7px;height:7px;border-radius:50%;background:${statusIcon};flex:none`,
+      statusText, statusTextColor: statusColor,
+      statusHint, statusHintStyle: statusHint ? 'font-family:JetBrains Mono,monospace;font-size:12px;color:#7C888E' : 'display:none',
+      statusAction,
+      statusActionStyle: statusAction
+        ? 'height:26px;padding:0 10px;background:transparent;border:1px solid #3A444C;border-radius:6px;color:#C3CDD1;font-size:12.5px;cursor:pointer'
+        : 'display:none',
+      shortcutHintStyle: narrow ? 'display:none' : 'font-size:12px;color:#7C888E;white-space:nowrap',
+
+      noRepoStyle: noRepo
+        ? 'display:flex;align-items:center;justify-content:center;min-height:52vh;padding:40px 0'
+        : 'display:none',
+      boardStyle: noRepo
+        ? 'display:none'
+        : narrow
+          ? 'display:flex;flex-direction:column;gap:26px'
+          : 'display:grid;grid-template-columns:236px minmax(0,1fr);gap:34px',
+      railStyle: narrow
+        ? 'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px'
+        : 'display:flex;flex-direction:column;gap:28px',
+      dayGridStyle: `display:grid;grid-template-columns:repeat(${narrow ? 4 : 7},minmax(0,1fr));gap:8px;padding-top:12px`,
+
+      notSyncedStyle: notSynced
+        ? 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(33,40,48,.82);border-radius:14px;padding:20px'
+        : 'display:none',
+
+      zeroWeekStyle: zeroWeek && !notSynced
+        ? 'display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 18px;background:#1D2429;border:1px solid #293137;border-radius:12px'
+        : 'display:none',
+      zeroWeekHint: `지난주에는 ${series[Math.max(0, w - 1)]}개를 커밋했어요.`,
+
+      detailSectionStyle: notSynced || zeroWeek ? 'display:none' : 'display:flex;flex-direction:column;gap:8px',
+      detailCols: narrow ? 'minmax(0,1fr) 52px' : 'minmax(0,1fr) 84px 52px',
+      // narrow: 레포명 → 메시지 위 한 줄로 접고 diff 열 제거
+      detailMainStyle: narrow
+        ? 'display:flex;flex-direction:column;gap:3px;min-width:0'
+        : 'display:grid;grid-template-columns:190px minmax(0,1fr);gap:14px;align-items:center;min-width:0',
+      detailDiffStyle: narrow
+        ? 'display:none'
+        : "font-family:'JetBrains Mono',monospace;font-size:12px;color:#7C888E;white-space:nowrap;text-align:right",
+      detailLabel: `${WD[selDay]}요일 ${dates[selDay]}일`,
+      detailCount: filtered.length
+        ? hiddenCount ? `커밋 ${filtered.length}개 · ${hiddenCount}개 숨김` : `커밋 ${filtered.length}개`
+        : '',
+      emptyDetailStyle: filtered.length ? 'display:none' : 'padding:20px 12px;font-size:14px;color:#96A3A9',
+      emptyDetailText: raw.length
+        ? '조건에 맞는 커밋이 없어요. 필터를 풀어보세요.'
+        : '이 날은 커밋 기록이 없어요. 계획만 남아 있습니다.',
+
+      excludeMerges: this.state.excludeMerges,
+      toggleMerges: () => this.setState(s => ({ excludeMerges: !s.excludeMerges })),
+      mergeToggleStyle: `height:28px;padding:0 10px;display:flex;align-items:center;gap:7px;background:${this.state.excludeMerges ? '#212830' : 'transparent'};border:1px solid ${this.state.excludeMerges ? '#3A444C' : '#2C353B'};border-radius:6px;color:#B5C0C5;font-size:12.5px;cursor:pointer;white-space:nowrap`,
+      mergeCheckStyle: `width:9px;height:9px;border-radius:2px;background:${this.state.excludeMerges ? cCol : '#39434A'}`,
+      repoFilters: repos.map(r => ({
+        label: r === 'all' ? '전체 레포' : r.split('/')[1],
+        active: this.state.repo === r,
+        select: () => this.setState({ repo: r }),
+        style: `height:28px;padding:0 10px;background:${this.state.repo === r ? '#2B343C' : 'transparent'};border:1px solid ${this.state.repo === r ? cCol : '#2C353B'};border-radius:6px;color:${this.state.repo === r ? '#FFFFFF' : '#A3AFB4'};font-size:12.5px;cursor:pointer;white-space:nowrap`
+      })),
+
+      draftsStyle: showDrafts && !notSynced && !noRepo ? '' : 'display:none',
+      draftGridStyle: `display:grid;grid-template-columns:repeat(${narrow ? 1 : 3},minmax(0,1fr));gap:12px`,
+      drafts: [
+        { channel: 'blog', title: '주 시작 요일 계산을 고치며 배운 타임존 함정', meta: '커밋 6개 · 3일 전', status: '발행됨', color: '#5FD3B1', link: 'dev.to에서 보기' },
+        { channel: 'linkedin', title: '커밋 동기화 스케줄러를 분리한 이유', meta: '커밋 4개 · 어제', status: '작성 중', color: '#8B989E', link: '' },
+        { channel: 'x', title: '대시보드를 10초 안에 읽히게 만든 규칙', meta: '커밋 3개 · 1시간 전', status: '발행 실패', color: '#F0B45E', link: '다시 시도' }
+      ].map(d => ({
+        channel: d.channel, title: d.title, meta: d.meta, status: d.status,
+        badgeStyle: `font-size:11.5px;padding:3px 8px;border-radius:20px;color:${d.color};border:1px solid ${d.color}55;white-space:nowrap`,
+        linkLabel: d.link,
+        linkStyle: d.link ? `font-size:12.5px;color:${d.color}` : 'display:none'
+      })),
+
+      chartMeta: `최대 ${maxW}개 · 선택한 주 ${series[w]}개`,
+      chartAria: `최근 12주 주간 커밋 수, 평균 ${avg}개. 선택한 주 ${series[w]}개.`,
+      areaPath: area, linePath: line, selX: pts[w].x,
+      avgY, avgLabelY: avgY + 4, avgValue: avg,
+      streakText: streak > 1 ? `${streak}주 연속 커밋 중` : '연속 기록이 끊겼어요',
+      clearHover: () => this.setState({ hoverWeek: -1 }),
+      tipStyle: hv >= 0
+        ? `position:absolute;top:8px;left:${hvPct}%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 10px;background:#2B343C;border:1px solid #3A444C;border-radius:8px;pointer-events:none;white-space:nowrap`
+        : 'display:none',
+      tipRange: hv >= 0 ? `${monthOf[hv] + 1}월 ${monthStart[hv]}일 주` : '',
+      tipValue: hv >= 0 ? `${series[hv]}개` : '',
+
+      traceStyle: motion ? 'stroke-dasharray:2600;animation:traceIn 1.1s cubic-bezier(.4,0,.2,1) both' : '',
+      prevWeek: () => this.setState(s => ({ week: Math.max(0, s.week - 1) })),
+      nextWeek: () => this.setState(s => ({ week: Math.min(11, s.week + 1) })),
+      goToday: () => this.setState({ week: 11, day: 4 }),
+
+      habits: [
+        { name: '매일 커밋', on: [1,1,1,0,1,0,1] },
+        { name: '테스트 작성', on: [0,1,1,0,1,0,0] },
+        { name: '기록 남기기', on: [0,0,1,0,0,1,0] }
+      ].map(h => ({
+        name: h.name,
+        label: `${h.on.reduce((a, b) => a + b, 0)}/7`,
+        dots: h.on.map(v => ({ style: `width:7px;height:7px;border-radius:2px;background:${v ? cCol : '#39434A'}` }))
+      }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

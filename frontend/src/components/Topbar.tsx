@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAppData } from '../contexts/AppDataContext'
 import { useTheme } from '../contexts/ThemeContext'
+import OverlayTray from '../overlay/OverlayTray'
 
 const TITLES: Record<string, string> = {
   '/dashboard': '대시보드',
@@ -68,6 +69,7 @@ function Topbar() {
         <span>{pageTitle}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <OverlayTray />
         <div
           style={{
             display: 'flex',

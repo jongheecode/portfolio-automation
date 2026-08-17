@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #14181B; }
+  * { box-sizing: border-box; }
+  a { color: #6FB6F0; text-decoration: none; }
+  a:hover { color: #9BD0F7; }
+  button { font: inherit; color: inherit; }
+  @keyframes traceIn { from { stroke-dashoffset: 1400 } to { stroke-dashoffset: 0 } }
+  @keyframes hudIn { from { opacity: 0; transform: translate(-50%, -48%) scale(.97) } to { opacity: 1; transform: translate(-50%, -50%) scale(1) } }
+  @keyframes popIn { from { opacity: 0; transform: translateY(-6px) } to { opacity: 1; transform: none } }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #14181B; color: #F0F4F5; font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif; -webkit-font-smoothing: antialiased; padding: 40px; display: flex; flex-direction: column; gap: 52px">
+
+  <!-- ══ 2a 작업 컨텍스트 팝오버 ═══════════════════════════ -->
+  <section style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+      <div style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: #262E35; color: #9EC4E4">2a</div>
+      <div style="font-size: 17px; font-weight: 600">작업 컨텍스트 팝오버</div>
+      <div style="font-size: 13.5px; color: #96A3A9">지금 이 폴더에서 뭘 만지고 있고, 오늘 커밋에 뭐가 들어갔는지.</div>
+    </div>
+
+    <div style="position: relative; width: 1160px; height: 640px; border-radius: 12px; overflow: hidden; border: 1px solid #262E35; background: #0F1316">
+
+      <div style="position: absolute; inset: 0; padding: 46px 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; color: #2C353B; user-select: none">
+        <div>class WeeklySummaryService(</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val commitRepository: CommitRepository,</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val clock: Clock,</div>
+        <div>) {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;fun weekOf(userId: Long, monday: LocalDate): WeekSummary {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;val range = monday.atStartOfDay(SEOUL)..monday.plusDays(7).atStartOfDay(SEOUL)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return commitRepository.countByDay(userId, range)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+        <div>}</div>
+      </div>
+
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 30px; background: rgba(20,24,27,.86); backdrop-filter: blur(18px); border-bottom: 1px solid #22282D; display: flex; align-items: center; padding: 0 14px; gap: 18px">
+        <span style="font-size: 12.5px; font-weight: 600; color: #C3CDD1">IntelliJ IDEA</span>
+        <span style="font-size: 12.5px; color: #6B777C">File</span>
+        <span style="font-size: 12.5px; color: #6B777C">VCS</span>
+        <span style="flex: 1"></span>
+        <span style="display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: #212830">
+          <span style="{{ wipDotStyle }}"></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E2E9EB">{{ trayWip }}</span>
+        </span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8B989E">금 18:24</span>
+      </div>
+
+      <div style="position: absolute; top: 38px; right: 78px; width: 380px; background: rgba(33,40,48,.95); backdrop-filter: blur(24px); border: 1px solid #3A444C; border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.55); padding: 16px; display: flex; flex-direction: column; gap: 14px; animation: popIn .22s cubic-bezier(.2,.8,.2,1) both">
+
+        <!-- 지금 열려 있는 폴더 -->
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; gap: 9px; min-width: 0">
+            <span style="width: 9px; height: 9px; border-radius: 2px; background: #6FB6F0; flex: none"></span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: #F0F4F5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">portfolio-automation</span>
+            <span style="font-size: 12px; color: #6B777C; flex: none">~/dev</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+            <span style="display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: #2B343C; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C3CDD1">feat/weekly-summary</span>
+            <span style="padding: 3px 8px; border-radius: 6px; border: 1px solid #46525A; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #9EC4E4">↑2 push 대기</span>
+            <span style="padding: 3px 8px; border-radius: 6px; border: 1px solid #46525A; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8B989E">7 파일 변경</span>
+          </div>
+        </div>
+
+        <!-- 작업 중 변경 (아직 커밋 안 한 것) -->
+        <div style="display: flex; flex-direction: column; gap: 9px; padding: 12px; background: #262E35; border: 1px solid #333C43; border-radius: 10px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="font-size: 12.5px; font-weight: 600; color: #B5C0C5">작업 중 변경</span>
+            <span style="flex: 1"></span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #9EC4E4">+214</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8B989E">−55</span>
+          </div>
+          <sc-for list="{{ wipFiles }}" as="f" hint-placeholder-count="3">
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center">
+              <span style="display: flex; align-items: center; gap: 7px; min-width: 0">
+                <span style="{{ f.tagStyle }}">{{ f.tag }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #DDE4E7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left">{{ f.path }}</span>
+              </span>
+              <span style="display: flex; align-items: center; gap: 6px; flex: none">
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #9EC4E4">{{ f.add }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #7C888E">{{ f.del }}</span>
+              </span>
+            </div>
+          </sc-for>
+          <div style="display: flex; align-items: center; gap: 8px; padding-top: 2px">
+            <span style="font-size: 12px; color: #7C888E">파일 4개 더</span>
+            <span style="flex: 1"></span>
+            <span style="{{ wipAgeStyle }}">{{ wipAge }}</span>
+          </div>
+        </div>
+
+        <!-- 오늘 커밋한 내용 -->
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-size: 12.5px; font-weight: 600; color: #96A3A9">오늘 커밋</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #F0F4F5">{{ todayCount }}</span>
+          </div>
+          <sc-for list="{{ todayCommits }}" as="c" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border-radius: 8px; border: 1px solid #2C353B; cursor: pointer" style-hover="background:#262E35; border-color:#46525A">
+              <div style="display: flex; align-items: baseline; gap: 8px">
+                <span style="font-size: 13px; color: #E7EDEF; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ c.message }}</span>
+                <span style="flex: 1"></span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #7C888E; flex: none">{{ c.time }}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <span style="font-size: 11.5px; color: #8B989E">{{ c.files }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #9EC4E4">{{ c.add }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #7C888E">{{ c.del }}</span>
+                <span style="flex: 1"></span>
+                <span style="{{ c.wroteStyle }}">{{ c.wrote }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- 브랜치 하나가 글 하나 -->
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; background: rgba(95,211,177,.07); border: 1px solid #3A5C52; border-radius: 10px">
+          <div style="font-size: 13px; line-height: 1.5; color: #D8E0E3">이 브랜치에서 <span style="font-family: 'JetBrains Mono', monospace; color: #5FD3B1">6커밋</span> 했고 아직 글로 안 썼어요.</div>
+          <button style="height: 36px; background: #5FD3B1; border: 0; border-radius: 8px; color: #0E1A16; font-size: 13.5px; font-weight: 600; cursor: pointer" style-hover="background:#7BE0C2">이 브랜치로 초안 만들기</button>
+        </div>
+
+        <!-- 주간 신호는 보조로 한 줄만 -->
+        <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+          <div style="display: flex; align-items: baseline; gap: 8px">
+            <span style="font-size: 12px; color: #7C888E">이번 주</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #B5C0C5">{{ weekTotal }} 커밋</span>
+            <span style="flex: 1"></span>
+            <a href="#" style="font-size: 12px; color: #96A3A9" style-hover="color:#F0F4F5">대시보드 열기</a>
+          </div>
+          <svg viewBox="0 0 348 34" style="width: 100%; height: auto; display: block">
+            <path d="{{ stripSmallLine }}" fill="none" stroke="#6FB6F0" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+            <line x1="0" y1="30" x2="348" y2="30" stroke="#3A444C" stroke-width="1" />
+            <sc-for list="{{ stripSmall }}" as="sp" hint-placeholder-count="7">
+              <circle cx="{{ sp.x }}" cy="{{ sp.y }}" r="{{ sp.r }}" fill="{{ sp.fill }}" stroke="#212830" stroke-width="2" />
+            </sc-for>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 2b 작업 컨텍스트 HUD ══════════════════════════════ -->
+  <section style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+      <div style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: #262E35; color: #9EC4E4">2b</div>
+      <div style="font-size: 17px; font-weight: 600">⌥⌘W 작업 컨텍스트 HUD</div>
+      <div style="font-size: 13.5px; color: #96A3A9">git status + git log 를 치는 대신 3초.</div>
+    </div>
+
+    <div style="position: relative; width: 1160px; height: 660px; border-radius: 12px; overflow: hidden; border: 1px solid #262E35; background: #0F1316">
+
+      <div style="position: absolute; inset: 0; padding: 46px 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; color: #262E33; user-select: none">
+        <div>class WeeklySummaryService(</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val commitRepository: CommitRepository,</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val clock: Clock,</div>
+        <div>) {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;fun weekOf(userId: Long, monday: LocalDate): WeekSummary {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;val range = monday.atStartOfDay(SEOUL)..monday.plusDays(7).atStartOfDay(SEOUL)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return commitRepository.countByDay(userId, range)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+        <div>}</div>
+      </div>
+
+      <div style="position: absolute; inset: 0; background: rgba(15,19,22,.64); backdrop-filter: blur(10px)"></div>
+
+      <div style="position: absolute; top: 50%; left: 50%; width: 880px; transform: translate(-50%, -50%); background: rgba(30,36,42,.93); backdrop-filter: blur(30px); border: 1px solid #46525A; border-radius: 18px; box-shadow: 0 40px 90px rgba(0,0,0,.6); padding: 24px 26px 18px; display: flex; flex-direction: column; gap: 18px; animation: hudIn .2s cubic-bezier(.2,.8,.2,1) both">
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <span style="width: 10px; height: 10px; border-radius: 3px; background: #6FB6F0; flex: none"></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 16px; color: #FFFFFF">portfolio-automation</span>
+          <span style="display: flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; background: #2B343C; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #C3CDD1">feat/weekly-summary</span>
+          <span style="padding: 4px 9px; border-radius: 6px; border: 1px solid #46525A; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #9EC4E4">↑2 push 대기</span>
+          <span style="flex: 1"></span>
+          <span style="{{ wipAgeStyle }}">{{ wipAge }}</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.05fr 1fr; gap: 18px">
+
+          <!-- 작업 중 변경 -->
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(38,46,53,.72); border: 1px solid #3A444C; border-radius: 12px">
+            <div style="display: flex; align-items: flex-end; gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: 12.5px; font-weight: 600; color: #96A3A9">작업 중 변경</span>
+                <span style="font-size: 12.5px; color: #7C888E">파일 7개 · 커밋 안 됨</span>
+              </div>
+              <span style="flex: 1"></span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 22px; color: #9EC4E4">+214</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 22px; color: #8B989E">−55</span>
+            </div>
+            <div style="height: 1px; background: #3A444C"></div>
+            <sc-for list="{{ wipFilesFull }}" as="f" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; align-items: center">
+                <span style="display: flex; align-items: center; gap: 8px; min-width: 0">
+                  <span style="{{ f.tagStyle }}">{{ f.tag }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #DDE4E7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left">{{ f.path }}</span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 8px; justify-content: flex-end">
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #9EC4E4">{{ f.add }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7C888E">{{ f.del }}</span>
+                  <span style="{{ f.barStyle }}"></span>
+                </span>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- 오늘 커밋한 내용 + 글감 -->
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <span style="font-size: 12.5px; font-weight: 600; color: #96A3A9">오늘 커밋</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F0F4F5">{{ todayCount }}</span>
+              <span style="flex: 1"></span>
+              <span style="font-size: 12px; color: #7C888E">이번 주 {{ weekTotal }}</span>
+            </div>
+            <sc-for list="{{ todayCommits }}" as="c" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid #3A444C; background: rgba(38,46,53,.5)">
+                <div style="display: flex; align-items: baseline; gap: 10px">
+                  <span style="font-size: 13.5px; color: #EEF3F4; line-height: 1.45; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ c.message }}</span>
+                  <span style="flex: 1"></span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7C888E; flex: none">{{ c.time }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 9px">
+                  <span style="font-size: 12px; color: #8B989E">{{ c.files }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #9EC4E4">{{ c.add }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #7C888E">{{ c.del }}</span>
+                  <span style="flex: 1"></span>
+                  <span style="{{ c.wroteStyle }}">{{ c.wrote }}</span>
+                </div>
+              </div>
+            </sc-for>
+
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(95,211,177,.08); border: 1px solid #3A5C52; border-radius: 10px">
+              <span style="font-size: 13px; line-height: 1.45; color: #D8E0E3; flex: 1">이 브랜치 <span style="font-family: 'JetBrains Mono', monospace; color: #5FD3B1">6커밋</span>이 글 하나가 됩니다.</span>
+              <button style="height: 34px; padding: 0 14px; background: #5FD3B1; border: 0; border-radius: 8px; color: #0E1A16; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap" style-hover="background:#7BE0C2">초안 만들기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주간 신호는 얇은 보조 스트립 -->
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <svg viewBox="0 0 560 40" style="width: 100%; height: auto; display: block">
+              <path d="{{ stripLine }}" fill="none" stroke="#6FB6F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9" />
+              <line x1="0" y1="34" x2="560" y2="34" stroke="#46525A" stroke-width="1" />
+              <sc-for list="{{ strip }}" as="sp" hint-placeholder-count="7">
+                <circle cx="{{ sp.x }}" cy="{{ sp.y }}" r="{{ sp.r }}" fill="{{ sp.fill }}" stroke="#1E242A" stroke-width="2.5" />
+              </sc-for>
+            </svg>
+            <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr))">
+              <sc-for list="{{ strip }}" as="sp" hint-placeholder-count="7">
+                <div style="display: flex; align-items: baseline; justify-content: center; gap: 4px">
+                  <span style="font-size: 11.5px; font-weight: 600; color: {{ sp.labelFill }}">{{ sp.wd }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: {{ sp.valueFill }}">{{ sp.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; flex: none">
+            <span style="display: flex; align-items: center; gap: 7px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">esc</span>
+              <span style="font-size: 12.5px; color: #8B989E">닫기</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 7px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">↵</span>
+              <span style="font-size: 12.5px; color: #8B989E">초안</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 7px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">⌘K</span>
+              <span style="font-size: 12.5px; color: #8B989E">커밋 검색</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ① 메뉴바 팝오버 ══════════════════════════════════ -->
+  <section style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <div style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: #262E35; color: #9EC4E4">1a</div>
+      <div style="font-size: 17px; font-weight: 600">메뉴바 상주 + 팝오버</div>
+      <div style="font-size: 13.5px; color: #96A3A9">상시 보이는 건 점 하나. 클릭하면 이번 주가 뜬다.</div>
+    </div>
+
+    <div style="position: relative; width: 1160px; height: 560px; border-radius: 12px; overflow: hidden; border: 1px solid #262E35; background: #0F1316">
+
+      <!-- 데스크톱 배경 (에디터) -->
+      <div style="position: absolute; inset: 0; padding: 46px 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; color: #2C353B; user-select: none">
+        <div>class WeeklySummaryService(</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val commitRepository: CommitRepository,</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val clock: Clock,</div>
+        <div>) {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;fun weekOf(userId: Long, monday: LocalDate): WeekSummary {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;val range = monday.atStartOfDay(SEOUL)..monday.plusDays(7).atStartOfDay(SEOUL)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return commitRepository.countByDay(userId, range)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+        <div>}</div>
+      </div>
+
+      <!-- 맥 메뉴바 -->
+      <div style="position: absolute; top: 0; left: 0; right: 0; height: 30px; background: rgba(20,24,27,.86); backdrop-filter: blur(18px); border-bottom: 1px solid #22282D; display: flex; align-items: center; padding: 0 14px; gap: 18px">
+        <span style="font-size: 12.5px; font-weight: 600; color: #C3CDD1">IntelliJ IDEA</span>
+        <span style="font-size: 12.5px; color: #6B777C">File</span>
+        <span style="font-size: 12.5px; color: #6B777C">Edit</span>
+        <span style="font-size: 12.5px; color: #6B777C">VCS</span>
+        <span style="flex: 1"></span>
+
+        <!-- 상주 인디케이터: 숫자가 아니라 점 + 오늘 수 -->
+        <span style="display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: #212830">
+          <span style="{{ trayDotStyle }}"></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E2E9EB">{{ trayLabel }}</span>
+        </span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8B989E">금 18:24</span>
+      </div>
+
+      <!-- 팝오버 -->
+      <div style="position: absolute; top: 38px; right: 78px; width: 312px; background: rgba(33,40,48,.94); backdrop-filter: blur(24px); border: 1px solid #3A444C; border-radius: 14px; box-shadow: 0 24px 60px rgba(0,0,0,.55); padding: 16px; display: flex; flex-direction: column; gap: 14px; animation: popIn .22s cubic-bezier(.2,.8,.2,1) both">
+
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <div style="font-size: 13px; font-weight: 600; color: #96A3A9">오늘</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #7C888E">8월 14일 금</div>
+        </div>
+
+        <div style="display: flex; align-items: flex-end; gap: 10px">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 38px; line-height: .9; color: #FFFFFF">{{ todayCount }}</div>
+          <div style="font-size: 13.5px; color: #B5C0C5; padding-bottom: 4px">커밋</div>
+          <span style="flex: 1"></span>
+          <!-- 웹이 절대 모르는 정보 -->
+          <div style="{{ pushBadgeStyle }}">{{ pushBadgeLabel }}</div>
+        </div>
+
+        <div style="height: 1px; background: #333C43"></div>
+
+        <!-- 이번 주 파형 (대시보드와 같은 문법) -->
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between">
+            <div style="font-size: 12.5px; font-weight: 600; color: #96A3A9">이번 주</div>
+            <div style="font-size: 12.5px; color: #B5C0C5"><span style="font-family: 'JetBrains Mono', monospace; color: #F0F4F5">{{ weekTotal }}</span> 커밋 · 평균 위</div>
+          </div>
+          <svg viewBox="0 0 280 74" style="width: 100%; height: auto; display: block; overflow: visible">
+            <defs>
+              <linearGradient id="ovMini" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6FB6F0" stop-opacity="0.32" />
+                <stop offset="100%" stop-color="#6FB6F0" stop-opacity="0.02" />
+              </linearGradient>
+            </defs>
+            <path d="{{ miniArea }}" fill="url(#ovMini)" />
+            <path d="{{ miniLine }}" fill="none" stroke="#6FB6F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{ traceStyle }}" />
+            <line x1="0" y1="52" x2="280" y2="52" stroke="#3A444C" stroke-width="1" />
+            <sc-for list="{{ miniPoints }}" as="mp" hint-placeholder-count="7">
+              <g>
+                <rect x="{{ mp.planX }}" y="54" width="10" height="{{ mp.planH }}" rx="2" fill="#F0B45E" opacity="{{ mp.planOpacity }}" />
+                <circle cx="{{ mp.x }}" cy="{{ mp.y }}" r="{{ mp.r }}" fill="{{ mp.fill }}" stroke="#212830" stroke-width="2.5" />
+              </g>
+            </sc-for>
+          </svg>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0">
+            <sc-for list="{{ miniPoints }}" as="mp" hint-placeholder-count="7">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 1px">
+                <span style="font-size: 11px; font-weight: 600; color: {{ mp.labelFill }}">{{ mp.wd }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: {{ mp.valueFill }}">{{ mp.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="width: 8px; height: 8px; border-radius: 3px; background: #F0B45E; flex: none"></span>
+            <span style="font-size: 13px; color: #CBD4D8">계획</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F0F4F5">2/4</span>
+            <span style="flex: 1"></span>
+            <span style="font-size: 12.5px; color: #7C888E">목요일 1개 남음</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="width: 8px; height: 8px; border-radius: 3px; background: #5FD3B1; flex: none"></span>
+            <span style="font-size: 13px; color: #CBD4D8">아직 글로 안 쓴 커밋</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F0F4F5">12</span>
+          </div>
+        </div>
+
+        <button style="height: 38px; background: #6FB6F0; border: 0; border-radius: 9px; color: #10171C; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px" style-hover="background:#8AC5F5">
+          초안 만들기
+          <span style="font-size: 12px; font-weight: 500; padding: 2px 7px; border-radius: 20px; background: rgba(16,23,28,.18)">커밋 12개</span>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 10px">
+          <a href="#" style="font-size: 12.5px; color: #96A3A9" style-hover="color:#F0F4F5">대시보드 열기</a>
+          <span style="flex: 1"></span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #6B777C">⌥⌘W</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ② 전역 단축키 HUD ════════════════════════════════ -->
+  <section style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <div style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: #262E35; color: #9EC4E4">1b</div>
+      <div style="font-size: 17px; font-weight: 600">⌥⌘W HUD 오버레이</div>
+      <div style="font-size: 13.5px; color: #96A3A9">3초 보고 esc. 화면을 떠나지 않고 이번 주를 확인한다.</div>
+    </div>
+
+    <div style="position: relative; width: 1160px; height: 620px; border-radius: 12px; overflow: hidden; border: 1px solid #262E35; background: #0F1316">
+
+      <div style="position: absolute; inset: 0; padding: 46px 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; color: #262E33; user-select: none">
+        <div>class WeeklySummaryService(</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val commitRepository: CommitRepository,</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;private val clock: Clock,</div>
+        <div>) {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;fun weekOf(userId: Long, monday: LocalDate): WeekSummary {</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;val range = monday.atStartOfDay(SEOUL)..monday.plusDays(7).atStartOfDay(SEOUL)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return commitRepository.countByDay(userId, range)</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+        <div>}</div>
+      </div>
+
+      <div style="position: absolute; inset: 0; background: rgba(15,19,22,.62); backdrop-filter: blur(10px)"></div>
+
+      <div style="position: absolute; top: 50%; left: 50%; width: 720px; transform: translate(-50%, -50%); background: rgba(30,36,42,.92); backdrop-filter: blur(30px); border: 1px solid #46525A; border-radius: 18px; box-shadow: 0 40px 90px rgba(0,0,0,.6); padding: 26px 28px 20px; display: flex; flex-direction: column; gap: 20px; animation: hudIn .2s cubic-bezier(.2,.8,.2,1) both">
+
+        <div style="display: flex; align-items: flex-end; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="font-size: 13px; font-weight: 600; color: #96A3A9">이번 주</div>
+            <div style="font-size: 19px; font-weight: 600; letter-spacing: -0.015em">8월 10일 – 8월 16일</div>
+          </div>
+          <span style="flex: 1"></span>
+          <div style="display: flex; align-items: flex-end; gap: 9px">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 46px; line-height: .85; color: #FFFFFF">{{ weekTotal }}</div>
+            <div style="font-size: 14px; color: #B5C0C5; padding-bottom: 5px">커밋</div>
+          </div>
+        </div>
+
+        <svg viewBox="0 0 900 180" role="img" aria-label="{{ hudAria }}" style="width: 100%; height: auto; display: block; overflow: visible">
+          <defs>
+            <linearGradient id="ovHud" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#6FB6F0" stop-opacity="0.34" />
+              <stop offset="100%" stop-color="#6FB6F0" stop-opacity="0.02" />
+            </linearGradient>
+          </defs>
+          <path d="{{ hudArea }}" fill="url(#ovHud)" />
+          <path d="{{ hudLine }}" fill="none" stroke="#6FB6F0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="{{ traceStyle }}" />
+          <line x1="0" y1="120" x2="900" y2="120" stroke="#46525A" stroke-width="1" />
+          <sc-for list="{{ hudPoints }}" as="hp" hint-placeholder-count="7">
+            <g>
+              <line x1="{{ hp.x }}" y1="{{ hp.y }}" x2="{{ hp.x }}" y2="120" stroke="#6FB6F0" stroke-opacity="{{ hp.stemOpacity }}" stroke-width="1.5" />
+              <rect x="{{ hp.planX }}" y="123" width="22" height="{{ hp.planH }}" rx="3" fill="#F0B45E" opacity="{{ hp.planOpacity }}" />
+              <circle cx="{{ hp.x }}" cy="{{ hp.y }}" r="{{ hp.r }}" fill="{{ hp.fill }}" stroke="#1E242A" stroke-width="3.5" />
+            </g>
+          </sc-for>
+        </svg>
+
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0; margin-top: -6px">
+          <sc-for list="{{ hudPoints }}" as="hp" hint-placeholder-count="7">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 17px; color: {{ hp.valueFill }}">{{ hp.value }}</span>
+              <span style="font-size: 13px; font-weight: 600; color: {{ hp.labelFill }}">{{ hp.wd }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; background: rgba(38,46,53,.7); border: 1px solid #3A444C; border-radius: 10px">
+            <div style="display: flex; align-items: center; gap: 7px">
+              <span style="width: 8px; height: 8px; border-radius: 3px; background: #F0B45E"></span>
+              <span style="font-size: 12.5px; color: #B5C0C5">계획</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 6px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #F0F4F5">2/4</span>
+              <span style="font-size: 12px; color: #7C888E">진행</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; background: rgba(38,46,53,.7); border: 1px solid #3A444C; border-radius: 10px">
+            <div style="display: flex; align-items: center; gap: 7px">
+              <span style="width: 8px; height: 8px; border-radius: 3px; background: #5FD3B1"></span>
+              <span style="font-size: 12.5px; color: #B5C0C5">글로 안 쓴 커밋</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 6px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #F0F4F5">12</span>
+              <span style="font-size: 12px; color: #7C888E">개</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; background: rgba(38,46,53,.7); border: 1px solid #3A444C; border-radius: 10px">
+            <div style="display: flex; align-items: center; gap: 7px">
+              <span style="{{ pushDotStyle }}"></span>
+              <span style="font-size: 12.5px; color: #B5C0C5">push 대기</span>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 6px">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #F0F4F5">{{ pushPendingCount }}</span>
+              <span style="font-size: 12px; color: #7C888E">{{ pushPendingHint }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px; padding-top: 2px">
+          <span style="display: flex; align-items: center; gap: 7px">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">esc</span>
+            <span style="font-size: 12.5px; color: #8B989E">닫기</span>
+          </span>
+          <span style="display: flex; align-items: center; gap: 7px">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">↵</span>
+            <span style="font-size: 12.5px; color: #8B989E">초안 만들기</span>
+          </span>
+          <span style="display: flex; align-items: center; gap: 7px">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 7px; border: 1px solid #46525A; border-radius: 5px; color: #B5C0C5">← →</span>
+            <span style="font-size: 12.5px; color: #8B989E">주 이동</span>
+          </span>
+          <span style="flex: 1"></span>
+          <span style="font-size: 12.5px; color: #7C888E">{{ streakText }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pushPending&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;로컬 git&quot;},&quot;quietMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;조용한 모드&quot;},&quot;motion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;모션&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6FB6F0&quot;,&quot;options&quot;:[&quot;#6FB6F0&quot;,&quot;#7FD1AE&quot;,&quot;#9BA9F2&quot;,&quot;#F0B45E&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;활동 색&quot;}}">
+const WD = ['월','화','수','목','금','토','일'];
+const WEEK = [4, 6, 2, 3, 6, 0, 0];
+const WIP = [
+  { tag: 'M', path: 'backend/.../WeeklySummaryService.kt', add: 128, del: 12 },
+  { tag: 'M', path: 'frontend/src/pages/DashboardPage.tsx', add: 64, del: 40 },
+  { tag: 'A', path: 'frontend/src/components/WeekWave.tsx', add: 22, del: 0 },
+  { tag: 'M', path: 'frontend/src/theme.css', add: 18, del: 3 },
+  { tag: 'D', path: 'frontend/src/legacy/HeatMap.tsx', add: 0, del: 96 }
+];
+const TODAY = 4;
+
+class Component extends DCLogic {
+  smooth(pts) {
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || pts[i + 1];
+      d += ` C ${(p1.x + (p2.x - p0.x) / 6).toFixed(1)} ${(p1.y + (p2.y - p0.y) / 6).toFixed(1)}, ${(p2.x - (p3.x - p1.x) / 6).toFixed(1)} ${(p2.y - (p3.y - p1.y) / 6).toFixed(1)}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+  }
+
+  wave(W, base, top, r0, r1) {
+    const col = W / 7;
+    const max = Math.max(1, ...WEEK);
+    return WEEK.map((v, i) => ({
+      x: Math.round(col * (i + 0.5)),
+      y: Math.round(base - (v / max) * (base - top)),
+      v, r: i === TODAY ? r1 : r0
+    }));
+  }
+
+  renderVals() {
+    const cCol = this.props.accent || '#6FB6F0';
+    const motion = this.props.motion !== false;
+    const quiet = this.props.quietMode === true;
+    const pushPending = this.props.pushPending !== false;
+    const plansByDay = [1, 0, 1, 1, 0, 0, 1];
+
+    const total = WEEK.reduce((a, b) => a + b, 0);
+
+    const mini = this.wave(280, 52, 8, 3, 5);
+    const hud = this.wave(900, 120, 18, 5, 8);
+
+    const miniLine = this.smooth(mini);
+    const hudLine = this.smooth(hud);
+
+    return {
+      todayCount: WEEK[TODAY],
+      weekTotal: total,
+
+      trayDotStyle: `width:8px;height:8px;border-radius:50%;background:${cCol};box-shadow:0 0 8px ${cCol}`,
+      trayLabel: quiet ? '오늘' : `오늘 ${WEEK[TODAY]}`,
+
+      pushBadgeStyle: pushPending
+        ? `font-size:11.5px;padding:4px 9px;border-radius:20px;color:${cCol};border:1px solid ${cCol}55;white-space:nowrap`
+        : 'display:none',
+      pushBadgeLabel: 'push 안 한 커밋 2개',
+      pushDotStyle: `width:8px;height:8px;border-radius:3px;background:${pushPending ? cCol : '#4A555C'}`,
+      pushPendingCount: pushPending ? 2 : 0,
+      pushPendingHint: pushPending ? '개 · 로컬에만 있음' : '개',
+
+      miniLine,
+      miniArea: `${miniLine} L ${mini[6].x} 52 L ${mini[0].x} 52 Z`,
+      miniPoints: mini.map((p, i) => ({
+        x: p.x, y: p.y, r: p.r, wd: WD[i],
+        fill: i === TODAY ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol,
+        labelFill: i === TODAY ? '#F0F4F5' : '#7C888E',
+        planX: p.x - 5,
+        planH: plansByDay[i] ? 4 + plansByDay[i] * 5 : 0,
+        planOpacity: plansByDay[i] ? 0.95 : 0
+      })),
+
+      hudLine,
+      hudArea: `${hudLine} L ${hud[6].x} 120 L ${hud[0].x} 120 Z`,
+      hudPoints: hud.map((p, i) => ({
+        x: p.x, y: p.y, r: p.r, wd: WD[i],
+        fill: i === TODAY ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol,
+        stemOpacity: i === TODAY ? 0.5 : 0.16,
+        labelFill: i === TODAY ? '#FFFFFF' : '#8B989E',
+        value: String(p.v),
+        valueY: p.y - 16,
+        valueFill: '#F0F4F5',
+        valueOpacity: quiet ? (i === TODAY ? 1 : 0) : (p.v ? 1 : 0),
+        planX: p.x - 11,
+        planH: plansByDay[i] ? 6 + plansByDay[i] * 8 : 0,
+        planOpacity: plansByDay[i] ? 0.95 : 0
+      })),
+      hudAria: `이번 주 커밋 ${total}개. 요일별 ${WEEK.map((v, i) => `${WD[i]} ${v}`).join(', ')}`,
+
+      // ── 2a / 2b: 지금 폴더의 작업 상태
+      trayWip: quiet ? 'WIP' : '+214',
+      wipDotStyle: `width:8px;height:8px;border-radius:50%;background:#F0B45E;box-shadow:0 0 8px #F0B45E`,
+      wipAge: '마지막 커밋 후 1시간 42분',
+      wipAgeStyle: 'font-size:12px;color:#F0B45E;white-space:nowrap',
+      wipFiles: WIP.slice(0, 3).map(f => ({
+        path: f.path, add: `+${f.add}`, del: `−${f.del}`,
+        tag: f.tag,
+        tagStyle: `font-family:'JetBrains Mono',monospace;font-size:10.5px;width:15px;height:15px;display:grid;place-items:center;border-radius:3px;flex:none;color:${f.tag === 'M' ? '#9EC4E4' : f.tag === 'A' ? '#5FD3B1' : '#F0B45E'};background:${f.tag === 'M' ? 'rgba(111,182,240,.14)' : f.tag === 'A' ? 'rgba(95,211,177,.14)' : 'rgba(240,180,94,.14)'}`
+      })),
+      wipFilesFull: WIP.map(f => ({
+        path: f.path, add: `+${f.add}`, del: `−${f.del}`,
+        tag: f.tag,
+        tagStyle: `font-family:'JetBrains Mono',monospace;font-size:10.5px;width:16px;height:16px;display:grid;place-items:center;border-radius:3px;flex:none;color:${f.tag === 'M' ? '#9EC4E4' : f.tag === 'A' ? '#5FD3B1' : '#F0B45E'};background:${f.tag === 'M' ? 'rgba(111,182,240,.14)' : f.tag === 'A' ? 'rgba(95,211,177,.14)' : 'rgba(240,180,94,.14)'}`,
+        barStyle: `width:${Math.max(4, Math.round((f.add + f.del) / 3))}px;height:5px;border-radius:3px;background:${cCol};opacity:.75;flex:none`
+      })),
+      todayCommits: [
+        { message: 'feat: 주간 요약 API 추가', time: '09:12', files: '4 파일', add: 128, del: 12, wrote: false },
+        { message: 'refactor: 동기화 스케줄러 분리', time: '11:40', files: '6 파일', add: 86, del: 74, wrote: false },
+        { message: 'fix: 주 시작 요일 계산 오류', time: '14:05', files: '2 파일', add: 14, del: 9, wrote: true }
+      ].map(c => ({
+        message: c.message, time: c.time, files: c.files,
+        add: `+${c.add}`, del: `−${c.del}`,
+        wrote: c.wrote ? '글에 포함됨' : '아직 안 씀',
+        wroteStyle: `font-size:11px;padding:2px 7px;border-radius:20px;white-space:nowrap;color:${c.wrote ? '#5FD3B1' : '#8B989E'};border:1px solid ${c.wrote ? '#3A5C52' : '#3A444C'}`
+      })),
+      strip: this.wave(560, 34, 6, 3.5, 5.5).map((p, i) => ({
+        x: p.x, y: p.y, r: p.r, wd: WD[i], value: String(p.v),
+        fill: i === TODAY ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol,
+        labelFill: i === TODAY ? '#FFFFFF' : '#8B989E',
+        valueFill: i === TODAY ? '#FFFFFF' : p.v ? '#C3CDD1' : '#5A666C'
+      })),
+      stripLine: this.smooth(this.wave(560, 34, 6, 3.5, 5.5)),
+      stripSmall: this.wave(348, 30, 5, 2.5, 4).map((p, i) => ({
+        x: p.x, y: p.y, r: p.r,
+        fill: i === TODAY ? '#FFFFFF' : p.v === 0 ? '#4A555C' : cCol
+      })),
+      stripSmallLine: this.smooth(this.wave(348, 30, 5, 2.5, 4)),
+
+      streakText: '4주 연속 커밋 중',
+      traceStyle: motion ? 'stroke-dasharray:1400;animation:traceIn .9s cubic-bezier(.4,0,.2,1) both' : ''
+    };
+  }
+}
+
+</script>
+</body>
+</html>

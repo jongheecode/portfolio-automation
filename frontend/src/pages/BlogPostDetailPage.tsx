@@ -14,6 +14,8 @@ function BlogPostDetailPage() {
   const [post, setPost] = useState<BlogPostDetail | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [linkedinContent, setLinkedinContent] = useState('')
+  const [twitterContent, setTwitterContent] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +29,8 @@ function BlogPostDetailPage() {
         setPost(detail)
         setTitle(detail.title)
         setContent(detail.content)
+        setLinkedinContent(detail.linkedinContent ?? '')
+        setTwitterContent(detail.twitterContent ?? '')
       })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false))
@@ -35,7 +39,7 @@ function BlogPostDetailPage() {
   async function handleSave() {
     setSaving(true)
     try {
-      const updated = await api.updateBlogPost(postId, title, content)
+      const updated = await api.updateBlogPost(postId, title, content, linkedinContent, twitterContent)
       setPost(updated)
     } catch (err) {
       setError((err as Error).message)
@@ -47,7 +51,7 @@ function BlogPostDetailPage() {
   async function handlePublish() {
     setSaving(true)
     try {
-      await api.updateBlogPost(postId, title, content)
+      await api.updateBlogPost(postId, title, content, linkedinContent, twitterContent)
       const updated = await api.publishBlogPost(postId)
       setPost(updated)
     } catch (err) {
@@ -101,7 +105,7 @@ function BlogPostDetailPage() {
           </svg>
           목록
         </button>
-        <PublishedBadge published={post.published} />
+        <PublishedBadge published={post.published} status={post.status} />
       </div>
 
       {error && <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{error}</p>}
@@ -123,6 +127,32 @@ function BlogPostDetailPage() {
 
       <MarkdownEditor value={content} onChange={setContent} />
 
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: 12, color: 'var(--muted2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            LinkedIn
+          </span>
+          <textarea
+            value={linkedinContent}
+            onChange={(e) => setLinkedinContent(e.target.value)}
+            rows={8}
+            style={socialArea}
+          />
+          <span style={{ fontSize: 11.5, color: 'var(--muted2)' }}>{linkedinContent.length}자</span>
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={{ fontSize: 12, color: 'var(--muted2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            X 스레드 (트윗 사이 빈 줄)
+          </span>
+          <textarea
+            value={twitterContent}
+            onChange={(e) => setTwitterContent(e.target.value)}
+            rows={8}
+            style={socialArea}
+          />
+        </label>
+      </div>
+
       <div style={{ display: 'flex', gap: 10 }}>
         <button type="button" onClick={handleSave} disabled={saving} style={buttonStyle('secondary')}>
           저장
@@ -135,14 +165,14 @@ function BlogPostDetailPage() {
         <button type="button" onClick={handleDelete} style={buttonStyle('danger')}>
           삭제
         </button>
-        {post.devtoUrl ? (
+        {post.devtoUrl || post.publishedUrl ? (
           <a
-            href={post.devtoUrl}
+            href={post.publishedUrl ?? post.devtoUrl ?? '#'}
             target="_blank"
             rel="noreferrer"
             style={{ ...buttonStyle('secondary'), display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }}
           >
-            dev.to에서 보기
+            발행본 보기
           </a>
         ) : (
           me?.devtoConnected && (
@@ -152,7 +182,7 @@ function BlogPostDetailPage() {
               disabled={publishingToDevTo}
               style={buttonStyle('primary')}
             >
-              {publishingToDevTo ? '올리는 중...' : 'dev.to에 올리기'}
+              {publishingToDevTo ? '올리는 중...' : post.status === 'failed' ? '다시 발행' : 'dev.to에 올리기'}
             </button>
           )
         )}
@@ -195,6 +225,18 @@ function buttonStyle(kind: 'primary' | 'secondary' | 'danger') {
   if (kind === 'primary') return { ...base, background: 'var(--accent)', color: '#fff' }
   if (kind === 'danger') return { ...base, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }
   return { ...base, background: 'var(--panel2)', color: 'var(--text)', border: '1px solid var(--border)' }
+}
+
+const socialArea = {
+  border: '1px solid var(--border)',
+  borderRadius: 10,
+  padding: '10px 12px',
+  fontSize: 13.5,
+  lineHeight: 1.5,
+  background: 'var(--panel)',
+  color: 'var(--text)',
+  fontFamily: 'inherit',
+  resize: 'vertical' as const,
 }
 
 export default BlogPostDetailPage

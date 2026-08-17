@@ -50,6 +50,12 @@ class TrackedRepo(
 
     var lastSyncedAt: Instant? = null,
 
+    @ColumnDefault("false")
+    var isPrivate: Boolean = false,
+
+    @ColumnDefault("true")
+    var aiScopeEnabled: Boolean = true,
+
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),
 )

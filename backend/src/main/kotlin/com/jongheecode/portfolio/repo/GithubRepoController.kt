@@ -20,7 +20,7 @@ class GithubRepoController(
     @GetMapping("/repos")
     fun listRepos(@AuthenticationPrincipal principal: OAuth2User): List<GithubRepoResponse> {
         val user = userRepository.currentUser(principal)
-        return githubApiClient.listRepos(user.accessToken).map { it.toResponse() }
+        return githubApiClient.listRepos(user.accessToken, user.username).map { it.toResponse() }
     }
 }
 

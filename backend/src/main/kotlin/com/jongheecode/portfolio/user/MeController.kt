@@ -23,6 +23,7 @@ class MeController(
                 avatarUrl = user.avatarUrl,
                 devtoConnected = user.devtoApiKey != null,
                 devtoUsername = user.devtoUsername,
+                autoSync = user.autoSync,
             ),
         )
     }
@@ -33,4 +34,5 @@ data class MeResponse(
     val avatarUrl: String?,
     val devtoConnected: Boolean,
     val devtoUsername: String?,
+    val autoSync: Boolean = true,
 )

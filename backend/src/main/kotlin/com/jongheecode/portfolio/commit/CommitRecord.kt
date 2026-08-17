@@ -10,14 +10,20 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
 @Table(
     name = "commit_records",
     uniqueConstraints = [UniqueConstraint(columnNames = ["tracked_repo_id", "sha"])],
+    indexes = [
+        Index(name = "idx_commit_repo_time", columnList = "tracked_repo_id, committed_at"),
+        Index(name = "idx_commit_time", columnList = "committed_at"),
+    ],
 )
 class CommitRecord(
     @Id
@@ -42,6 +48,20 @@ class CommitRecord(
 
     @Column(nullable = false)
     val htmlUrl: String,
+
+    var authorLogin: String? = null,
+
+    @ColumnDefault("0")
+    var additions: Int = 0,
+
+    @ColumnDefault("0")
+    var deletions: Int = 0,
+
+    @ColumnDefault("false")
+    var isMerge: Boolean = false,
+
+    @ColumnDefault("false")
+    var isBot: Boolean = false,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_post_id")

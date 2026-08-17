@@ -14,4 +14,8 @@ class ApiExceptionHandler {
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgument(ex: IllegalArgumentException): ResponseEntity<Map<String, String?>> =
         ResponseEntity.badRequest().body(mapOf("message" to ex.message))
+
+    @ExceptionHandler(NoSuchElementException::class)
+    fun handleNotFound(ex: NoSuchElementException): ResponseEntity<Map<String, String?>> =
+        ResponseEntity.status(404).body(mapOf("message" to ex.message))
 }

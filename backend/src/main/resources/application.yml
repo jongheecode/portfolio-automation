@@ -1,6 +1,9 @@
 spring:
   application:
     name: portfolio-automation
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
     url: jdbc:postgresql://localhost:5432/${DB_NAME:portfolio}
     username: ${DB_USERNAME:portfolio}
@@ -16,7 +19,7 @@ spring:
           github:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
-            scope: read:user,repo
+            scope: read:user,repo,read:org
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
