@@ -41,8 +41,15 @@ export default function OverlayWidget() {
   }
 
   useEffect(() => {
-    return window.overlay.onForceHud(() => setMode('hud'))
-  }, [])
+    return window.overlay.onForceHud(() => {
+      if (loggedOut) {
+        setMode('collapsed')
+        void window.overlay.openLogin()
+        return
+      }
+      setMode('hud')
+    })
+  }, [loggedOut])
 
   useEffect(() => {
     return window.overlay.onLoginComplete(() => void refresh())
