@@ -1,4 +1,7 @@
+import ChangeReviewPanel from './ChangeReviewPanel'
+import OverlayChrome from './OverlayChrome'
 import WeekStrip from './WeekStrip'
+import type { LocalDiffReview } from './overlayData'
 
 export interface WipFile {
   tag: 'M' | 'A' | 'D'
@@ -56,18 +59,25 @@ const TAG_BG: Record<WipFile['tag'], string> = {
 export default function WorkContextPanel({
   data,
   variant,
+  review,
   onCreateBranchDraft,
   onOpenDashboard,
+  onCollapse,
+  onHide,
 }: {
   data: WorkContextData
   variant: 'popover' | 'hud'
+  review: LocalDiffReview | null
   onCreateBranchDraft: () => void
   onOpenDashboard: () => void
+  onCollapse: () => void
+  onHide: () => void
 }) {
   if (variant === 'hud') {
     const visibleFiles = data.files.slice(0, 5)
     return (
       <div className="hud-shell">
+        <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ width: 10, height: 10, borderRadius: 3, background: C.commit, flex: 'none' }} />
           <span className="mono" style={{ fontSize: 16 }}>{data.repoName}</span>
@@ -128,6 +138,7 @@ export default function WorkContextPanel({
                 </div>
               ))}
             </div>
+            <ChangeReviewPanel review={review} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
@@ -205,6 +216,7 @@ export default function WorkContextPanel({
 
   return (
     <div className="panel-shell">
+      <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
         <span style={{ width: 9, height: 9, borderRadius: 2, background: C.commit, flex: 'none' }} />
         <span className="mono" style={{ fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -274,6 +286,8 @@ export default function WorkContextPanel({
           </div>
         </div>
       )}
+
+      <ChangeReviewPanel review={review} compact />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1, minHeight: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>

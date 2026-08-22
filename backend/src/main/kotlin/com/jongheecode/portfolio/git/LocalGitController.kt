@@ -22,6 +22,10 @@ class LocalGitController(
     fun list(@AuthenticationPrincipal principal: OAuth2User): LocalGitResponse =
         localGitService.list(userRepository.currentUser(principal))
 
+    @GetMapping("/diff")
+    fun diff(@AuthenticationPrincipal principal: OAuth2User): LocalDiffReview =
+        localGitService.review(userRepository.currentUser(principal))
+
     @PostMapping
     fun add(
         @AuthenticationPrincipal principal: OAuth2User,

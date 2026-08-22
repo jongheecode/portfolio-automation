@@ -27,9 +27,9 @@ cd desktop && npm run dev                                 # Electron 오버레�
 
 op.gg처럼 다른 창 위에 항상 떠 있는 위젯. 설계 문서: `docs/superpowers/specs/2026-08-18-desktop-overlay-design.md`. 구현 계획(Task 1~8): `docs/superpowers/plans/2026-08-18-desktop-overlay.md`. 디자인 원본: `Overlay Week Pulse.dc.html`(2a/2b), `Overlay Direction.dc.html`(4a 적재선).
 
-**Task 1~8 코드/문서 완료.** 실행 방법과 수동 테스트 체크리스트는 `desktop/README.md`.
+**Task 1~8 코드/문서 완료.** 로그인·로컬 레포 등록까지 수동으로 확인됨. 체크리스트는 `desktop/README.md`.
 
-### 로그인 플로우 — HTTP 경로 확인됨, 실제 GitHub 클릭 로그인은 수동
+### 로그인 플로우 — 수동 확인됨
 
 로그인 창은 `http://localhost:8080/oauth2/authorization/github`를 연다. `localhost`로 열면
 `redirect_uri=http://localhost:8080/login/oauth2/code/github`가 나오고 `/api/me`는 비로그인 시 401이다.
@@ -58,11 +58,14 @@ GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 red
 텍스트 `#E7E9EA`/`#8E979C`, 강청 `#6E9CC4` · 황동 `#C8A05A` · 세이지 `#7FAE9B`, 카드 이중 링.
 `frontend/src/theme.css`, `desktop/src/styles.css`, 팝오버/HUD 인라인 색에 반영함.
 
-### 커밋 안 된 변경사항
+### 조작 / 폰트 / 변경 리뷰
 
-없음(이 핸드오프를 쓰는 시점에 오버레이/테마/Task 8을 커밋한 상태여야 함). 남아 있으면 `git status`를 볼 것.
+팝오버·HUD가 열리면 상단에 드래그 바 + **접기 / 숨기기 / 종료**. 알약은 6px 이상 움직이면 드래그, 아니면 클릭. 적재선 SVG는 `pointer-events: none`.
+글꼴: Pretendard Variable + IBM Plex Mono (`desktop/index.html`).
+개발 중 확인: `GET /api/local-git/diff` → 팝오버/HUD의 변경 리뷰(휴리스틱 노트 + unified diff). Gemini 없음.
+저녁 18:00 / 금요일 랩 토스트(하루 최대 2개), HUD에서 Enter → 브랜치 초안.
 
-다음 작업 후보: 체크리스트를 화면에서 한 번씩 체크, GitHub 클릭 로그인 한 번 더 확인, Claude Design MCP는 Cursor에서 Connect가 안 떠서 공식 연동은 보류.
+**다음**: 백엔드를 재시작해야 `/diff`가 산다. 오버레이도 Electron main 변경이 있으면 `npm run dev`를 다시. 드래그/접기/숨기기/종료와 리뷰 패널을 화면에서 한 번 확인할 것. Claude Design MCP는 보류.
 
 ## 코드 스타일 / 관례
 

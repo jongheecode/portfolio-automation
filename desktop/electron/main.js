@@ -5,8 +5,9 @@ const fs = require('node:fs')
 // 적재선 알약(LoadLinePill)이 실제 크기 240×36로 그려져야 해서(축소하면 카운트 숫자가 안 읽힘),
 // 트레이 패딩(14+6) + hide 버튼(22) + gap(2)을 더한 폭으로 맞춘다.
 const COLLAPSED = { width: 284, height: 44 }
+const TOAST = { width: 320, height: 96 }
 const POPOVER = { width: 380, height: 560 }
-const HUD = { width: 900, height: 600 }
+const HUD = { width: 960, height: 640 }
 const POSITION_FILE = path.join(app.getPath('userData'), 'window-position.json')
 const COOKIE_FILE = path.join(app.getPath('userData'), 'session-cookies.json')
 
@@ -73,6 +74,10 @@ function boundsForMode(mode) {
       x: Math.round(work.x + (work.width - HUD.width) / 2),
       y: Math.round(work.y + (work.height - HUD.height) / 2),
     }
+  }
+  if (mode === 'toast') {
+    const [x, y] = mainWindow.getPosition()
+    return { width: TOAST.width, height: TOAST.height, x, y }
   }
   if (mode === 'popover') {
     const [x, y] = mainWindow.getPosition()

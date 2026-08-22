@@ -56,7 +56,7 @@ export default function LoadLinePill({
       viewBox="0 0 240 36"
       width={240}
       height={36}
-      style={{ display: 'block' }}
+      style={{ display: 'block', pointerEvents: 'none' }}
       role="img"
       aria-label={`커밋 안 한 파일 ${vals[0]}개, push 대기 ${vals[1]}개, 글로 안 쓴 커밋 ${vals[2]}개`}
     >
@@ -69,7 +69,7 @@ export default function LoadLinePill({
               x={g.tx}
               y={12}
               textAnchor="middle"
-              fontFamily="'JetBrains Mono', monospace"
+              fontFamily="'IBM Plex Mono', monospace"
               fontSize={11}
               fill="#c9d0d3"
             >

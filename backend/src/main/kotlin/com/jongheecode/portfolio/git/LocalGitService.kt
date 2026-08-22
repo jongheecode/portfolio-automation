@@ -40,6 +40,21 @@ class LocalGitService(
         return list(user)
     }
 
+    @Transactional(readOnly = true)
+    fun review(user: User): LocalDiffReview {
+        val snapshot = list(user).active
+        if (snapshot == null) return LocalDiffReview(emptyList(), listOf("감시 중인 로컬 레포가 없어요."))
+        if (!snapshot.ok) return LocalDiffReview(emptyList(), listOf(snapshot.error ?: "git을 읽지 못했습니다"))
+        val path = Path.of(snapshot.path)
+        val staged = LocalGitParser.parseUnifiedDiff(gitCli.runOrEmpty(path, "diff", "--cached", "--unified=3"), staged = true)
+        val unstaged = LocalGitParser.parseUnifiedDiff(gitCli.runOrEmpty(path, "diff", "--unified=3"), staged = false)
+        val files = (staged + unstaged).distinctBy { it.path }.take(10)
+        return LocalDiffReview(
+            files = files,
+            notes = LocalGitParser.reviewNotes(files, snapshot.changedFileCount, snapshot.additions, snapshot.deletions),
+        )
+    }
+
     @Transactional
     fun remove(user: User, id: Long) {
         val row = repoRepository.findByIdAndUser(id, user) ?: error("감시 폴더를 찾을 수 없습니다: $id")
