@@ -7,6 +7,7 @@ import type {
   Me,
   Plan,
   LocalGitResponse,
+  OverlayProcessStatus,
   PortfolioDraft,
   PortfolioSection,
   SyncState,
@@ -111,6 +112,9 @@ export const api = {
       body: JSON.stringify({ path }),
     }),
   unwatchLocalGit: (id: number) => apiFetch<void>(`/api/local-git/${id}`, { method: 'DELETE' }),
+  overlayStatus: () => apiFetch<OverlayProcessStatus>('/api/overlay'),
+  startOverlay: () => apiFetch<OverlayProcessStatus>('/api/overlay/start', { method: 'POST' }),
+  stopOverlay: () => apiFetch<OverlayProcessStatus>('/api/overlay/stop', { method: 'POST' }),
   retryPublish: (id: number) =>
     apiFetch<BlogPostDetail>(`/api/drafts/${id}/publish/retry`, { method: 'POST' }),
   generateWeekPack: (weekStart: string) =>

@@ -217,3 +217,7 @@ export interface OverlayToast {
   title: string
   body: string
 }
+
+export interface OverlayProcessStatus {
+  running: boolean
+}

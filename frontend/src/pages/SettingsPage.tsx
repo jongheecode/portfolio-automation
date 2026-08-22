@@ -17,11 +17,14 @@ function SettingsPage() {
   const [autoSync, setAutoSync] = useState(me?.autoSync !== false)
   const [savingAuto, setSavingAuto] = useState(false)
   const [scopeOpen, setScopeOpen] = useState(false)
+  const [desktopRunning, setDesktopRunning] = useState<boolean | null>(null)
+  const [desktopBusy, setDesktopBusy] = useState(false)
 
   useEffect(() => {
     api.syncStatus().then((status) => {
       if (status.autoSync != null) setAutoSync(status.autoSync)
     }).catch(() => {})
+    api.overlayStatus().then((status) => setDesktopRunning(status.running)).catch(() => {})
   }, [])
 
   async function handleConnectDevTo() {
@@ -67,7 +70,7 @@ function SettingsPage() {
 
       {error && <p style={{ color: 'var(--muted)', fontSize: 13.5 }}>{error}</p>}
 
-      <div style={{ border: '1px solid var(--border)', borderRadius: 13, background: 'var(--panel)', overflow: 'hidden' }}>
+      <div style={{ border: '1px solid var(--border)', borderRadius: 13, background: 'var(--panel)', boxShadow: 'var(--card-shadow)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)' }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 500 }}>GitHub 연동</div>
@@ -179,6 +182,61 @@ function SettingsPage() {
           >
             범위 설정
           </button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>데스크톱 오버레이</div>
+            <div style={{ fontSize: 12.5, color: 'var(--muted)', marginTop: 3 }}>
+              {desktopRunning == null ? '상태를 확인하는 중' : desktopRunning ? '실행 중 · 화면에서 안 보이면 끄고 다시 켜보세요' : '꺼져 있음'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              disabled={desktopBusy || desktopRunning === true}
+              onClick={() => {
+                setDesktopBusy(true)
+                void api.startOverlay()
+                  .then((status) => setDesktopRunning(status.running))
+                  .catch((err) => setError((err as Error).message))
+                  .finally(() => setDesktopBusy(false))
+              }}
+              style={{
+                fontSize: 13,
+                color: 'var(--text)',
+                background: 'var(--panel2)',
+                border: '1px solid var(--border)',
+                borderRadius: 7,
+                padding: '5px 12px',
+                cursor: desktopBusy || desktopRunning === true ? 'default' : 'pointer',
+              }}
+            >
+              켜기
+            </button>
+            <button
+              type="button"
+              disabled={desktopBusy || desktopRunning === false}
+              onClick={() => {
+                setDesktopBusy(true)
+                void api.stopOverlay()
+                  .then((status) => setDesktopRunning(status.running))
+                  .catch((err) => setError((err as Error).message))
+                  .finally(() => setDesktopBusy(false))
+              }}
+              style={{
+                fontSize: 13,
+                color: desktopRunning ? '#142028' : 'var(--muted)',
+                background: desktopRunning ? 'var(--act-plan)' : 'var(--panel2)',
+                border: '1px solid var(--border)',
+                borderRadius: 7,
+                padding: '5px 12px',
+                cursor: desktopBusy || desktopRunning === false ? 'default' : 'pointer',
+              }}
+            >
+              끄기
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid var(--border)' }}>

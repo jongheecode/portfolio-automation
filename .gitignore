@@ -1,5 +1,8 @@
 .claude/settings.local.json
+.claude-design-scratch/
+.cursor/
 .idea/
 .vscode/
 *.iml
 .DS_Store
+desktop/node_modules/

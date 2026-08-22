@@ -11,7 +11,11 @@ contextBridge.exposeInMainWorld('overlay', {
   dragMove: () => ipcRenderer.send('overlay:drag-move'),
   dragEnd: () => ipcRenderer.send('overlay:drag-end'),
   openDashboard: () => ipcRenderer.send('overlay:open-dashboard'),
+  openSettings: () => ipcRenderer.send('overlay:open-settings'),
   openLogin: () => ipcRenderer.invoke('overlay:open-login'),
+  hide: () => ipcRenderer.send('overlay:hide'),
+  quit: () => ipcRenderer.send('overlay:quit'),
+  menu: () => ipcRenderer.send('overlay:menu'),
   onLoginComplete: (callback) => {
     const listener = () => callback()
     ipcRenderer.on('overlay:login-complete', listener)

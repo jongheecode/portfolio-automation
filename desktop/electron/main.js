@@ -1,15 +1,19 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell, Menu, Tray, session } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
 
-const COLLAPSED = { width: 160, height: 44 }
+// 적재선 알약(LoadLinePill)이 실제 크기 240×36로 그려져야 해서(축소하면 카운트 숫자가 안 읽힘),
+// 트레이 패딩(14+6) + hide 버튼(22) + gap(2)을 더한 폭으로 맞춘다.
+const COLLAPSED = { width: 284, height: 44 }
 const POPOVER = { width: 380, height: 560 }
 const HUD = { width: 900, height: 600 }
 const POSITION_FILE = path.join(app.getPath('userData'), 'window-position.json')
+const COOKIE_FILE = path.join(app.getPath('userData'), 'session-cookies.json')
 
 let mainWindow = null
 let dragStart = null
 let loginWindow = null
+let tray = null
 
 function loadCollapsedPosition() {
   try {
@@ -19,12 +23,45 @@ function loadCollapsedPosition() {
   } catch {
     // 파일 없음/손상 — 기본 위치 사용
   }
-  const { width } = screen.getPrimaryDisplay().workAreaSize
-  return { x: width - COLLAPSED.width - 24, y: 24 }
+  const work = screen.getPrimaryDisplay().workArea
+  return { x: work.x + work.width - COLLAPSED.width - 24, y: work.y + 24 }
+}
+
+function clampToWorkArea(position) {
+  const work = screen.getPrimaryDisplay().workArea
+  const x = Math.min(Math.max(position.x, work.x), work.x + work.width - COLLAPSED.width)
+  const y = Math.min(Math.max(position.y, work.y), work.y + work.height - COLLAPSED.height)
+  return { x, y }
 }
 
 function saveCollapsedPosition(position) {
   fs.writeFileSync(POSITION_FILE, JSON.stringify(position))
+}
+
+async function persistLocalhostCookies() {
+  const cookies = await session.defaultSession.cookies.get({ domain: 'localhost' })
+  fs.writeFileSync(COOKIE_FILE, JSON.stringify(cookies))
+}
+
+async function restoreLocalhostCookies() {
+  try {
+    const cookies = JSON.parse(fs.readFileSync(COOKIE_FILE, 'utf8'))
+    if (!Array.isArray(cookies)) return
+    for (const cookie of cookies) {
+      await session.defaultSession.cookies.set({
+        url: `http://localhost${cookie.path || '/'}`,
+        name: cookie.name,
+        value: cookie.value,
+        path: cookie.path || '/',
+        httpOnly: Boolean(cookie.httpOnly),
+        secure: false,
+        sameSite: 'lax',
+        expirationDate: cookie.expirationDate || Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+      })
+    }
+  } catch {
+    // 저장된 쿠키 없음
+  }
 }
 
 function boundsForMode(mode) {
@@ -41,7 +78,7 @@ function boundsForMode(mode) {
     const [x, y] = mainWindow.getPosition()
     return { width: POPOVER.width, height: POPOVER.height, x, y }
   }
-  const { x, y } = loadCollapsedPosition()
+  const { x, y } = clampToWorkArea(loadCollapsedPosition())
   return { width: COLLAPSED.width, height: COLLAPSED.height, x, y }
 }
 
@@ -61,11 +98,29 @@ function createWindow() {
       nodeIntegration: false,
     },
   })
-  mainWindow.setAlwaysOnTop(true, 'screen-saver')
+  // 'screen-saver' 레벨은 Alt+Tab 전환 UI까지 가릴 정도로 공격적이라, 위젯에 적당한 'floating'으로 낮춘다.
+  mainWindow.setAlwaysOnTop(true, 'floating')
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL
   if (!devServerUrl) throw new Error('VITE_DEV_SERVER_URL이 없습니다. npm run dev(desktop/scripts/dev.mjs)로 실행하세요.')
   mainWindow.loadURL(devServerUrl)
+  mainWindow.show()
+}
+
+function createTray() {
+  tray = new Tray(path.join(__dirname, '..', 'assets', 'tray.png'))
+  tray.setToolTip('Week Pulse 오버레이')
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: '오버레이 보이기', click: () => showOverlay() },
+    { label: '숨기기', click: () => mainWindow?.hide() },
+    { type: 'separator' },
+    { label: '종료', click: () => app.quit() },
+  ]))
+  tray.on('click', () => {
+    if (!mainWindow) return
+    if (mainWindow.isVisible()) mainWindow.hide()
+    else showOverlay()
+  })
 }
 
 ipcMain.on('overlay:set-mode', (_event, mode) => {
@@ -98,36 +153,81 @@ ipcMain.on('overlay:open-dashboard', () => {
   shell.openExternal('http://localhost:5173/dashboard')
 })
 
+ipcMain.on('overlay:open-settings', () => {
+  shell.openExternal('http://localhost:5173/settings')
+})
+
+ipcMain.on('overlay:hide', () => {
+  mainWindow?.hide()
+})
+
+ipcMain.on('overlay:quit', () => {
+  app.quit()
+})
+
+ipcMain.on('overlay:menu', () => {
+  if (!mainWindow) return
+  Menu.buildFromTemplate([
+    { label: '숨기기', click: () => mainWindow.hide() },
+    { label: '다시 열기 (Alt+Ctrl+W)', click: () => showOverlay('hud') },
+    { type: 'separator' },
+    { label: '종료', click: () => app.quit() },
+  ]).popup({ window: mainWindow })
+})
+
+function showOverlay(mode) {
+  if (!mainWindow) return
+  mainWindow.show()
+  mainWindow.setAlwaysOnTop(true, 'floating')
+  mainWindow.focus()
+  if (mode === 'hud') mainWindow.webContents.send('overlay:force-hud')
+}
+
 ipcMain.handle('overlay:open-login', async () => {
   if (loginWindow) {
     loginWindow.focus()
     return
   }
+  // parent를 투명 always-on-top 창에 붙이면 리다이렉트가 끊기는 경우가 있어 독립 창으로 연다.
+  // Electron 기본 UA는 GitHub/Google이 임베디드 웹뷰로 보고 500을 내는 경우가 있다.
   loginWindow = new BrowserWindow({
-    width: 480,
-    height: 640,
-    parent: mainWindow ?? undefined,
-    webPreferences: { contextIsolation: true, nodeIntegration: false },
+    width: 520,
+    height: 720,
+    autoHideMenuBar: true,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      session: session.defaultSession,
+    },
   })
-  loginWindow.loadURL('http://localhost:8080/oauth2/authorization/github')
+  loginWindow.webContents.setUserAgent(
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
+  )
 
-  const onNavigate = (_event, url) => {
+  const closeAfterFrontendRedirect = (_event, url) => {
     if (url.startsWith('http://localhost:5173')) {
-      loginWindow?.close()
+      setTimeout(() => loginWindow?.close(), 400)
     }
   }
-  loginWindow.webContents.on('did-navigate', onNavigate)
-  loginWindow.webContents.on('did-navigate-in-page', onNavigate)
+  loginWindow.webContents.on('will-redirect', closeAfterFrontendRedirect)
+  loginWindow.webContents.on('did-navigate', closeAfterFrontendRedirect)
+  loginWindow.webContents.on('did-navigate-in-page', closeAfterFrontendRedirect)
   loginWindow.on('closed', () => {
     loginWindow = null
-    mainWindow?.webContents.send('overlay:login-complete')
+    void persistLocalhostCookies().finally(() => {
+      mainWindow?.webContents.send('overlay:login-complete')
+    })
   })
+
+  loginWindow.loadURL('http://localhost:8080/oauth2/authorization/github')
 })
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await restoreLocalhostCookies()
   createWindow()
+  createTray()
   globalShortcut.register('Alt+Control+W', () => {
-    mainWindow?.webContents.send('overlay:force-hud')
+    showOverlay('hud')
   })
 })
 

@@ -1,33 +1,34 @@
 :root,
 [data-theme='dark'] {
-  --bg: #191e22;
-  --bg2: #151a1e;
-  --bg-blur: rgba(25, 30, 34, 0.78);
-  --surface: #212830;
-  --panel: #212830;
-  --panel2: #262e35;
-  --cell: #262e35;
-  --cell-active: #2b343c;
-  --border: rgba(240, 244, 245, 0.08);
-  --border2: rgba(240, 244, 245, 0.14);
-  --text: #f0f4f5;
-  --muted: #96a3a9;
-  --muted2: #7a868c;
-  --accent: #6fb6f0;
-  --accent-soft: rgba(111, 182, 240, 0.16);
-  --green: #5fd3b1;
+  --bg: #0f1214;
+  --bg2: #0c0f11;
+  --bg-blur: rgba(15, 18, 20, 0.78);
+  --surface: #171b1e;
+  --panel: #171b1e;
+  --panel2: #1b2024;
+  --cell: #1b2024;
+  --cell-active: #22282c;
+  --border: #262b2f;
+  --border2: rgba(231, 233, 234, 0.12);
+  --text: #e7e9ea;
+  --muted: #8e979c;
+  --muted2: #5a6368;
+  --accent: #6e9cc4;
+  --accent-soft: rgba(110, 156, 196, 0.16);
+  --green: #7fae9b;
   --gh-btn: #ffffff;
-  --gh-btn-fg: #191e22;
+  --gh-btn-fg: #10171c;
   --gh-btn-border: #ffffff;
-  --heat-0: #262e35;
+  --heat-0: #1b2024;
   --heat-1: #2b4458;
   --heat-2: #3d6f96;
-  --heat-3: #6fb6f0;
-  --heat-4: #b7dbf8;
-  --act-commit: #6fb6f0;
-  --act-plan: #f0b45e;
-  --act-draft: #5fd3b1;
-  --act-post: #5fd3b1;
+  --heat-3: #6e9cc4;
+  --heat-4: #9bc0dd;
+  --act-commit: #6e9cc4;
+  --act-plan: #c8a05a;
+  --act-draft: #7fae9b;
+  --act-post: #7fae9b;
+  --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
   --hit: 38px;
   --radius-8: 8px;
   --radius-12: 12px;
@@ -61,10 +62,11 @@
   --heat-2: #7eafd4;
   --heat-3: #1f74b8;
   --heat-4: #155888;
-  --act-commit: #1f74b8;
+  --act-commit: #3d6f96;
   --act-plan: #a86c14;
-  --act-draft: #1c8a6c;
-  --act-post: #1c8a6c;
+  --act-draft: #3d7a68;
+  --act-post: #3d7a68;
+  --card-shadow: 0 6px 18px rgba(20, 25, 28, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 }
 
 html,
@@ -79,6 +81,12 @@ body {
   color: var(--text);
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
+}
+
+.wp-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
 }
 
 * {

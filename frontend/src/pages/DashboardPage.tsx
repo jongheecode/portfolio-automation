@@ -903,6 +903,7 @@ const panel: CSSProperties = {
   border: '1px solid var(--border)',
   borderRadius: 14,
   background: 'var(--panel)',
+  boxShadow: 'var(--card-shadow)',
   padding: '14px 14px 12px',
 }
 
@@ -935,7 +936,7 @@ const navBtn: CSSProperties = {
 
 const primaryBtn: CSSProperties = {
   background: 'var(--act-commit)',
-  color: '#142028',
+  color: '#10171c',
   border: 'none',
   borderRadius: 8,
   padding: '8px 14px',
