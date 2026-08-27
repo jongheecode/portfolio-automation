@@ -9,7 +9,19 @@
   --act-commit: #6e9cc4;
   --act-plan: #c8a05a;
   --act-draft: #7fae9b;
+  --diff-add: #8fbf9f;
+  --diff-del: #c17b63;
   --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.loadline__gate {
+  transition: d 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loadline__gate {
+    transition: none;
+  }
 }
 
 html,
@@ -164,7 +176,7 @@ button {
 }
 
 .chrome__btn--quit {
-  color: var(--act-plan);
+  color: var(--muted);
 }
 
 .review {
@@ -242,8 +254,8 @@ button {
   color: var(--muted);
 }
 
-.review__add { color: #7fae9b; }
-.review__del { color: #c8a05a; }
+.review__add { color: var(--diff-add); }
+.review__del { color: var(--diff-del); }
 
 .overlay-toast {
   width: 100%;

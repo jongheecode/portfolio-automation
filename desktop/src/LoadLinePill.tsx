@@ -34,10 +34,14 @@ export default function LoadLinePill({
   counts,
   cap = 17,
   showCounts = true,
+  width = 240,
+  height = 36,
 }: {
   counts: LoadLineCounts
   cap?: number
   showCounts?: boolean
+  width?: number
+  height?: number
 }) {
   const vals = [counts.uncommittedFiles, counts.unpushedCommits, counts.unwrittenCommits]
   const cols = [C_FILE, C_PUSH, C_WRITE]
@@ -54,8 +58,8 @@ export default function LoadLinePill({
   return (
     <svg
       viewBox="0 0 240 36"
-      width={240}
-      height={36}
+      width={width}
+      height={height}
       style={{ display: 'block', pointerEvents: 'none' }}
       role="img"
       aria-label={`커밋 안 한 파일 ${vals[0]}개, push 대기 ${vals[1]}개, 글로 안 쓴 커밋 ${vals[2]}개`}
@@ -63,7 +67,7 @@ export default function LoadLinePill({
       <line x1={12} y1={14} x2={228} y2={14} stroke="#5a6368" strokeWidth={1.5} />
       {gates.map((g, i) => (
         <g key={i}>
-          {g.path && <path d={g.path} fill={g.color} opacity={0.92} />}
+          {g.path && <path className="loadline__gate" d={g.path} fill={g.color} opacity={0.92} />}
           {showCounts && g.count && (
             <text
               x={g.tx}
@@ -71,7 +75,7 @@ export default function LoadLinePill({
               textAnchor="middle"
               fontFamily="'IBM Plex Mono', monospace"
               fontSize={11}
-              fill="#c9d0d3"
+              fill="#12161a"
             >
               {g.count}
             </text>

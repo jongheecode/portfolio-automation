@@ -1,11 +1,14 @@
+import LoadLinePill, { type LoadLineCounts } from './LoadLinePill'
 import { useWindowDrag } from './useWindowDrag'
 
 export default function OverlayChrome({
   title,
+  counts,
   onCollapse,
   onHide,
 }: {
   title?: string
+  counts?: LoadLineCounts
   onCollapse?: () => void
   onHide?: () => void
 }) {
@@ -15,6 +18,7 @@ export default function OverlayChrome({
       <button type="button" className="chrome__drag" {...drag} title="드래그해서 이동">
         {title ?? 'Week Pulse'}
       </button>
+      {counts && <LoadLinePill counts={counts} width={96} height={14.4} showCounts={false} />}
       {onCollapse && (
         <button type="button" className="chrome__btn" onClick={onCollapse} title="알약으로 접기">
           접기
