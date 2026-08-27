@@ -51,6 +51,12 @@ GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 red
 
 `desktop/src/LoadLinePill.tsx`. 트레이 폭 284. 연결 안 됨/레포 없음은 텍스트 알약.
 
+`frontend-design` 스킬로 재검토 후 반영(2026-08-27): 팝오버/HUD를 열어도 적재선이 사라지지 않도록
+`OverlayChrome`에 축소판(96×14.4, 숫자 라벨 없이)을 이어 붙임. 게이트 깊이 변화에 `d` 전환 애니메이션
+추가(`.loadline__gate`, `prefers-reduced-motion` 존중). 게이트 위 숫자 텍스트 대비 낮았던 것 `#12161a`로
+수정. 색 의미 중복 정리 — `--diff-add`/`--diff-del` 토큰을 새로 두어 diff +/-가 더 이상 세이지/황동(활동
+색)을 빌려쓰지 않게 함, 종료 버튼도 황동 대신 `--muted`로.
+
 ### Instrument Panel 팔레트 — 토큰 반영됨
 
 방향 목업: https://claude.ai/code/artifact/90943371-d511-44c7-bd80-937ac739ea32
