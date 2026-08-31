@@ -30,6 +30,14 @@ class FindingService(
         )
     }
 
+    fun updateStatus(user: User, id: Long, status: String): FindingDto {
+        require(status == "DISMISSED" || status == "USED_IN_POST") { "알 수 없는 상태입니다: $status" }
+        val finding = findingRepository.findById(id).orElseThrow { NoSuchElementException("발견을 찾을 수 없습니다: $id") }
+        require(finding.commit.trackedRepo.user.id == user.id) { "권한이 없습니다" }
+        finding.status = status
+        return findingRepository.save(finding).toDto()
+    }
+
     private fun evaluateLive(user: User, snapshot: com.jongheecode.portfolio.git.LocalGitSnapshot): List<FindingRules.Candidate> {
         val safeFiles = DiffSizeGuard.filter(localGitService.review(user).files)
         val wipFiles: List<WipFile> = snapshot.files
