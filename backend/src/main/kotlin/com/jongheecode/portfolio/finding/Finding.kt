@@ -48,3 +48,24 @@ class Finding(
     @Column(nullable = false)
     val createdAt: Instant = Instant.now(),
 )
+
+data class FindingDto(
+    val id: Long,
+    val ruleId: String,
+    val category: String,
+    val tier: String?,
+    val message: String,
+    val evidence: String?,
+    val status: String,
+)
+
+fun Finding.toDto() = FindingDto(id, ruleId, category, tier, message, evidence, status)
+
+data class NextActionDto(
+    val message: String,
+    val tier: String,
+    val evidence: String?,
+    val findingId: Long?,
+)
+
+fun FindingPriority.NextAction.toDto() = NextActionDto(message, tier, evidence, findingId)
