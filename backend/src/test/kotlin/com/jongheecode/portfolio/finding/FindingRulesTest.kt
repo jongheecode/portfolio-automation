@@ -152,4 +152,46 @@ class FindingRulesTest {
     fun `200줄 이하는 안 걸린다`() {
         assertEquals(null, FindingRules.largeCommit(additions = 100, deletions = 50))
     }
+
+    @Test
+    fun `짧은 커밋 메시지를 잡는다`() {
+        val hit = FindingRules.weakCommitMessage("fix")
+        assertEquals("weak-commit-message", hit?.ruleId)
+        assertEquals(null, hit?.tier)
+    }
+
+    @Test
+    fun `설명이 담긴 메시지는 안 걸린다`() {
+        assertEquals(null, FindingRules.weakCommitMessage("오버레이 창 상태를 3개로 정리 + 클램프 도입"))
+    }
+
+    @Test
+    fun `소스만 바뀌고 테스트가 없으면 잡는다`() {
+        val files = listOf(com.jongheecode.portfolio.git.WipFile("M", "backend/src/main/kotlin/Foo.kt", 30, 2))
+        assertEquals("no-test-touched", FindingRules.noTestTouched(files)?.ruleId)
+    }
+
+    @Test
+    fun `테스트 파일도 같이 바뀌면 안 걸린다`() {
+        val files = listOf(
+            com.jongheecode.portfolio.git.WipFile("M", "backend/src/main/kotlin/Foo.kt", 30, 2),
+            com.jongheecode.portfolio.git.WipFile("M", "backend/src/test/kotlin/FooTest.kt", 10, 0),
+        )
+        assertEquals(null, FindingRules.noTestTouched(files))
+    }
+
+    @Test
+    fun `소스 변경이 없으면 안 걸린다`() {
+        val files = listOf(com.jongheecode.portfolio.git.WipFile("M", "docs/notes.md", 5, 0))
+        assertEquals(null, FindingRules.noTestTouched(files))
+    }
+
+    @Test
+    fun `추가된 TODO 줄 수를 센다`() {
+        val files = listOf(
+            DiffHunk(path = "a.kt", staged = false, additions = 2, deletions = 0, patch = "+// TODO: 나중에\n+val x = 1\n+// TODO: 이것도"),
+            DiffHunk(path = "b.kt", staged = false, additions = 1, deletions = 0, patch = "-// TODO: 지워짐"),
+        )
+        assertEquals(2, FindingRules.newTodoCount(files))
+    }
 }

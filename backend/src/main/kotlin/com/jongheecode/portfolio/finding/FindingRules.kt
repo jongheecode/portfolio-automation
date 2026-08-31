@@ -125,4 +125,41 @@ object FindingRules {
             evidence = "+$additions -$deletions",
         )
     }
+
+    private val WEAK_MESSAGES = setOf("fix", "wip", "update", "temp", "fix bug", "임시", "수정")
+
+    fun weakCommitMessage(message: String): Candidate? {
+        val firstLine = message.lineSequence().first().trim()
+        val weak = firstLine.length < 8 || firstLine.lowercase() in WEAK_MESSAGES
+        if (!weak) return null
+        return Candidate(
+            ruleId = "weak-commit-message",
+            category = "기록",
+            tier = null,
+            message = "커밋 메시지가 짧음: \"$firstLine\"",
+            evidence = null,
+        )
+    }
+
+    private fun isSourceFile(path: String) =
+        path.endsWith(".kt") || path.endsWith(".ts") || path.endsWith(".tsx") || path.endsWith(".js")
+
+    private fun isTestFile(path: String) =
+        path.contains("test", ignoreCase = true) || path.contains(".spec.")
+
+    fun noTestTouched(wipFiles: List<com.jongheecode.portfolio.git.WipFile>): Candidate? {
+        val sourceTouched = wipFiles.any { isSourceFile(it.path) }
+        val testTouched = wipFiles.any { isTestFile(it.path) }
+        if (!sourceTouched || testTouched) return null
+        return Candidate(
+            ruleId = "no-test-touched",
+            category = "테스트",
+            tier = null,
+            message = "소스만 바뀌고 테스트 파일 변경 없음",
+            evidence = null,
+        )
+    }
+
+    fun newTodoCount(files: List<DiffHunk>): Int =
+        files.sumOf { file -> addedLines(file).count { it.contains("TODO") } }
 }
