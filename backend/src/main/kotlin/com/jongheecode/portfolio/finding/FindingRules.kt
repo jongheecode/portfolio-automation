@@ -1,6 +1,7 @@
 package com.jongheecode.portfolio.finding
 
 import com.jongheecode.portfolio.git.DiffHunk
+import com.jongheecode.portfolio.git.WipFile
 
 object FindingRules {
     enum class FindingTier { SECURITY, STRUCTURE, BACKLOG }
@@ -78,6 +79,50 @@ object FindingRules {
             message = "eval/exec 사용 확인해볼 것",
             evidence = "${hit.path} — eval( 또는 문자열을 이어붙인 exec(가 추가된 것 같아요.",
             filePath = hit.path,
+        )
+    }
+
+    private val ROOT_LEVEL_FILES = setOf(
+        "docker-compose.yml", "README.md", ".gitignore", "AGENTS.md",
+    )
+
+    private fun topLevelFolders(paths: List<String>): Set<String> =
+        paths.mapNotNull { raw ->
+            val path = raw.trim()
+            if (path in ROOT_LEVEL_FILES) return@mapNotNull null
+            val slash = path.indexOf('/')
+            if (slash < 0) return@mapNotNull null
+            path.substring(0, slash)
+        }.toSet()
+
+    fun commitSplitSuggestion(wipFiles: List<WipFile>): Candidate? {
+        val folders = topLevelFolders(wipFiles.map { it.path })
+        if (folders.size < 2) return null
+        val totalLines = wipFiles.sumOf { it.additions + it.deletions }
+        if (totalLines < 50 && wipFiles.size < 4) return null
+        val sortedFolders = folders.sorted()
+        val evidence = sortedFolders.joinToString("; ") { folder ->
+            val filesInFolder = wipFiles.filter { it.path.startsWith("$folder/") }.joinToString(", ") { it.path }
+            "$folder: $filesInFolder"
+        }
+        return Candidate(
+            ruleId = "commit-split-suggestion",
+            category = "구조",
+            tier = FindingTier.STRUCTURE,
+            message = "${sortedFolders.joinToString("·")}이 같이 바뀜 (의도한 거면 넘어가도 됨)",
+            evidence = evidence,
+        )
+    }
+
+    fun largeCommit(additions: Int, deletions: Int): Candidate? {
+        val total = additions + deletions
+        if (total < 200) return null
+        return Candidate(
+            ruleId = "large-commit",
+            category = "구조",
+            tier = FindingTier.STRUCTURE,
+            message = "한 커밋에 ${total}줄 — 200줄 넘음",
+            evidence = "+$additions -$deletions",
         )
     }
 }

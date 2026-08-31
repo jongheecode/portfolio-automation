@@ -100,4 +100,56 @@ class FindingRulesTest {
         )
         assertEquals(null, FindingRules.evalOrExec(files))
     }
+
+    @Test
+    fun `루트 직속 파일만 걸치면 커밋 분리를 제안 안 한다`() {
+        val files = listOf(
+            com.jongheecode.portfolio.git.WipFile("M", "docker-compose.yml", 2, 1),
+            com.jongheecode.portfolio.git.WipFile("M", "README.md", 3, 0),
+            com.jongheecode.portfolio.git.WipFile("M", "backend/build.gradle.kts", 1, 1),
+        )
+        assertEquals(null, FindingRules.commitSplitSuggestion(files))
+    }
+
+    @Test
+    fun `두 폴더가 걸치지만 변경량이 작으면 제안 안 한다`() {
+        val files = listOf(
+            com.jongheecode.portfolio.git.WipFile("M", "backend/config/SecurityConfig.kt", 1, 1),
+            com.jongheecode.portfolio.git.WipFile("M", "desktop/electron/main.js", 1, 1),
+        )
+        assertEquals(null, FindingRules.commitSplitSuggestion(files))
+    }
+
+    @Test
+    fun `두 폴더가 걸치고 변경량도 크면 제안한다`() {
+        val files = listOf(
+            com.jongheecode.portfolio.git.WipFile("M", "backend/config/SecurityConfig.kt", 40, 5),
+            com.jongheecode.portfolio.git.WipFile("M", "desktop/electron/main.js", 20, 3),
+        )
+        val hit = FindingRules.commitSplitSuggestion(files)
+        assertEquals("commit-split-suggestion", hit?.ruleId)
+        assertEquals(FindingRules.FindingTier.STRUCTURE, hit?.tier)
+    }
+
+    @Test
+    fun `desktop 폴더 안에서만 여러 파일 걸치는 건 제안 안 한다`() {
+        val files = listOf(
+            com.jongheecode.portfolio.git.WipFile("M", "desktop/electron/main.js", 60, 5),
+            com.jongheecode.portfolio.git.WipFile("M", "desktop/electron/preload.js", 20, 2),
+            com.jongheecode.portfolio.git.WipFile("M", "desktop/src/OverlayWidget.tsx", 30, 4),
+        )
+        assertEquals(null, FindingRules.commitSplitSuggestion(files))
+    }
+
+    @Test
+    fun `200줄 넘는 커밋을 잡는다`() {
+        val hit = FindingRules.largeCommit(additions = 160, deletions = 45)
+        assertEquals("large-commit", hit?.ruleId)
+        assertEquals(FindingRules.FindingTier.STRUCTURE, hit?.tier)
+    }
+
+    @Test
+    fun `200줄 이하는 안 걸린다`() {
+        assertEquals(null, FindingRules.largeCommit(additions = 100, deletions = 50))
+    }
 }
