@@ -10,7 +10,7 @@
 | 인원 | 1명 (개인 프로젝트) |
 | 역할 | 기획·백엔드·프론트엔드·데스크톱 앱 전부 |
 
-![로그인 화면](docs/screenshots/landing.jpg)
+![대시보드](docs/screenshots/dashboard.jpg)
 
 ## 뭘 할 수 있나
 
@@ -18,7 +18,7 @@
 
 추적할 레포를 추가하면 그 레포의 커밋 기록을 가져와서 쌓아둔다. 대시보드에서 얼마나 커밋했는지, 어떤 레포를 얼마나 건드렸는지 한눈에 볼 수 있다.
 
-![대시보드](docs/screenshots/dashboard.jpg)
+![로그인 화면](docs/screenshots/landing.jpg)
 
 **아직 블로그에 안 쓴 커밋을 모아서 초안을 써준다.**
 
