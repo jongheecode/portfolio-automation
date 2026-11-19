@@ -105,6 +105,24 @@ export function createDraftFromLocal(weekStart: string, summaries: string[]): Pr
   })
 }
 
+export interface NextAction {
+  message: string
+  tier: 'SECURITY' | 'STRUCTURE' | 'BACKLOG' | 'CLEAR'
+  evidence: string | null
+  findingId: number | null
+}
+
+export function fetchNextAction(): Promise<NextAction> {
+  return apiFetch<NextAction>('/api/findings/next-action')
+}
+
+export function updateFindingStatus(id: number, status: 'DISMISSED' | 'USED_IN_POST'): Promise<unknown> {
+  return apiFetch(`/api/findings/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+}
+
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일']
 
 export function seoulToday(): string {

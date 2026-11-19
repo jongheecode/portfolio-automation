@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import LoadLinePill from './LoadLinePill'
 import OverlayChrome from './OverlayChrome'
 import OverlayToast from './OverlayToast'
 import TrayIndicator from './TrayIndicator'
@@ -29,8 +28,15 @@ type Mode = 'collapsed' | 'toast' | 'popover' | 'hud'
 const AUTO_POPOVER_MS = 5000
 const AUTO_TOAST_MS = 5000
 
+const TIER_COLOR: Record<string, string> = {
+  SECURITY: '#C4693A',
+  STRUCTURE: '#6E9CC4',
+  BACKLOG: '#8E979C',
+  CLEAR: '#7FAE9B',
+}
+
 export default function OverlayWidget() {
-  const { me, loggedOut, connectionOk, hasLocalRepo, data, newCommitTick, toast, review, refresh, createBranchDraft, dismissToast, loadReview } =
+  const { me, loggedOut, connectionOk, hasLocalRepo, data, newCommitTick, toast, review, nextAction, refresh, createBranchDraft, dismissToast, loadReview } =
     useOverlayData()
   void me
   const [mode, setModeState] = useState<Mode>('collapsed')
@@ -113,18 +119,12 @@ export default function OverlayWidget() {
 
   if (mode === 'collapsed' || mode === 'toast') {
     if (connectionOk && hasLocalRepo && data) {
-      // 적재선(Overlay Direction.dc.html 4a안): 커밋 안 한 파일 / push 대기 / 글 안 쓴 커밋이
-      // 기준선 아래로 얼마나 밀렸는지 한 실루엣으로 보여준다. 다 내보내면 평평한 한 줄.
       return (
-        <TrayIndicator onOpenPopover={() => setMode('popover')}>
-          <LoadLinePill
-            counts={{
-              uncommittedFiles: data.changedFileCount,
-              unpushedCommits: data.unpushedCount,
-              unwrittenCommits: data.branchCommitCount,
-            }}
-          />
-        </TrayIndicator>
+        <TrayIndicator
+          label={nextAction?.message ?? ''}
+          dotColor={TIER_COLOR[nextAction?.tier ?? 'BACKLOG']}
+          onOpenPopover={() => setMode('popover')}
+        />
       )
     }
     const label = !connectionOk ? '연결 안 됨' : '레포 없음'

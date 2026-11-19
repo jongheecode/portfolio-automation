@@ -73,17 +73,11 @@ export default function WorkContextPanel({
   onCollapse: () => void
   onHide: () => void
 }) {
-  const loadLineCounts = {
-    uncommittedFiles: data.changedFileCount,
-    unpushedCommits: data.unpushedCount,
-    unwrittenCommits: data.branchCommitCount,
-  }
-
   if (variant === 'hud') {
     const visibleFiles = data.files.slice(0, 5)
     return (
       <div className="hud-shell">
-        <OverlayChrome title={data.repoName} counts={loadLineCounts} onCollapse={onCollapse} onHide={onHide} />
+        <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ width: 10, height: 10, borderRadius: 3, background: C.commit, flex: 'none' }} />
           <span className="mono" style={{ fontSize: 16 }}>{data.repoName}</span>
@@ -222,7 +216,7 @@ export default function WorkContextPanel({
 
   return (
     <div className="panel-shell">
-      <OverlayChrome title={data.repoName} counts={loadLineCounts} onCollapse={onCollapse} onHide={onHide} />
+      <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
         <span style={{ width: 9, height: 9, borderRadius: 2, background: C.commit, flex: 'none' }} />
         <span className="mono" style={{ fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
