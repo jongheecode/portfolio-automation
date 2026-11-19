@@ -25,7 +25,7 @@ cd desktop && npm run dev                                 # Electron 오버레�
 
 ## 지금 진행 중: 데스크톱 오버레이 (`desktop/`)
 
-op.gg처럼 다른 창 위에 항상 떠 있는 위젯. 설계 문서: `docs/superpowers/specs/2026-08-18-desktop-overlay-design.md`. 구현 계획(Task 1~8): `docs/superpowers/plans/2026-08-18-desktop-overlay.md`. 디자인 원본: `Overlay Week Pulse.dc.html`(2a/2b), `Overlay Direction.dc.html`(4a 적재선).
+op.gg처럼 다른 창 위에 항상 떠 있는 위젯. 설계 문서: `docs/superpowers/specs/2026-08-18-desktop-overlay-design.md`. 구현 계획(Task 1~8): `docs/superpowers/plans/2026-08-18-desktop-overlay.md`. 디자인 원본: `docs/design/Overlay Week Pulse.dc.html`(2a/2b). 루트에 있던 디자인/핸드오프 스크래치 파일들은 `docs/design/`로 옮김.
 
 **Task 1~8 코드/문서 완료.** 로그인·로컬 레포 등록까지 수동으로 확인됨. 체크리스트는 `desktop/README.md`.
 
