@@ -1,7 +1,8 @@
 import ChangeReviewPanel from './ChangeReviewPanel'
+import FindingDetail from './FindingDetail'
 import OverlayChrome from './OverlayChrome'
 import WeekStrip from './WeekStrip'
-import type { LocalDiffReview } from './overlayData'
+import type { LocalDiffReview, NextAction } from './overlayData'
 
 export interface WipFile {
   tag: 'M' | 'A' | 'D'
@@ -60,6 +61,8 @@ export default function WorkContextPanel({
   data,
   variant,
   review,
+  nextAction,
+  onFindingHandled,
   onCreateBranchDraft,
   onOpenDashboard,
   onCollapse,
@@ -68,6 +71,8 @@ export default function WorkContextPanel({
   data: WorkContextData
   variant: 'popover' | 'hud'
   review: LocalDiffReview | null
+  nextAction: NextAction | null
+  onFindingHandled: () => void
   onCreateBranchDraft: () => void
   onOpenDashboard: () => void
   onCollapse: () => void
@@ -217,6 +222,7 @@ export default function WorkContextPanel({
   return (
     <div className="panel-shell">
       <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
+      {nextAction && <FindingDetail nextAction={nextAction} onHandled={onFindingHandled} />}
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
         <span style={{ width: 9, height: 9, borderRadius: 2, background: C.commit, flex: 'none' }} />
         <span className="mono" style={{ fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

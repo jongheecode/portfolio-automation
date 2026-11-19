@@ -154,6 +154,8 @@ export default function OverlayWidget() {
       data={data}
       variant={mode === 'hud' ? 'hud' : 'popover'}
       review={review}
+      nextAction={nextAction}
+      onFindingHandled={() => void refresh()}
       onCreateBranchDraft={() => void createBranchDraft()}
       onOpenDashboard={() => window.overlay.openDashboard()}
       onCollapse={() => setMode('collapsed')}
