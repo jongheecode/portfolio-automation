@@ -107,6 +107,16 @@ export interface Plan {
   linkedCommitIds?: number[]
 }
 
+export interface FindingDto {
+  id: number
+  ruleId: string
+  category: string
+  tier: string | null
+  message: string
+  evidence: string | null
+  status: string
+}
+
 export interface WeekCommit {
   id: number
   sha?: string
@@ -119,6 +129,7 @@ export interface WeekCommit {
   deletions?: number
   isMerge?: boolean
   isBot?: boolean
+  findings?: FindingDto[]
 }
 
 export interface WeekDay {
@@ -148,6 +159,12 @@ export interface WeeklyPoint {
   count: number
 }
 
+export interface RecurringFriction {
+  ruleId: string
+  label: string
+  count: number
+}
+
 export interface WeekView {
   weekStart: string
   weekEnd: string
@@ -157,6 +174,7 @@ export interface WeekView {
   pack: WeekPack | null
   weekly?: WeeklyPoint[]
   unwrittenCommitCount?: number
+  recurringFriction?: RecurringFriction[]
 }
 
 export interface PortfolioDraft {

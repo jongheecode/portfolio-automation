@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage'
 import PdfPage from './pages/PdfPage'
 import RepoDetailPage from './pages/RepoDetailPage'
 import SettingsPage from './pages/SettingsPage'
+import WeekReviewPage from './pages/WeekReviewPage'
 
 function RootRoute() {
   const { me, loading } = useAppData()
@@ -33,6 +34,7 @@ function App() {
             <Route path="/blog/:id" element={<BlogPostDetailPage />} />
             <Route path="/pdf" element={<PdfPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/week-review" element={<WeekReviewPage />} />
           </Route>
         </Routes>
         </OverlayProvider>
