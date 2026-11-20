@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import OverlayChrome from './OverlayChrome'
 import OverlayToast from './OverlayToast'
 import TrayIndicator from './TrayIndicator'
@@ -40,6 +40,13 @@ export default function OverlayWidget() {
     useOverlayData()
   void me
   const [mode, setModeState] = useState<Mode>('collapsed')
+  // 자동으로 뜬 팝오버/토스트는 마우스가 올라가 있는 동안 닫히면 안 된다 — 읽는 중에
+  // 사라지는 게 가장 거슬리는 부분이었다. ref라서 effect 재실행 없이 타이머가 매번 확인한다.
+  const hoveringRef = useRef(false)
+  const autoCloseProps = {
+    onMouseEnter: () => { hoveringRef.current = true },
+    onMouseLeave: () => { hoveringRef.current = false },
+  }
 
   function setMode(next: Mode) {
     setModeState(next)
@@ -68,7 +75,15 @@ export default function OverlayWidget() {
   useEffect(() => {
     if (newCommitTick === 0) return
     setMode('popover')
-    const id = window.setTimeout(() => setMode('collapsed'), AUTO_POPOVER_MS)
+    let id: number
+    const tryClose = () => {
+      if (hoveringRef.current) {
+        id = window.setTimeout(tryClose, AUTO_POPOVER_MS)
+      } else {
+        setMode('collapsed')
+      }
+    }
+    id = window.setTimeout(tryClose, AUTO_POPOVER_MS)
     return () => window.clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newCommitTick])
@@ -76,10 +91,16 @@ export default function OverlayWidget() {
   useEffect(() => {
     if (!toast || loggedOut || mode === 'popover' || mode === 'hud') return
     setMode('toast')
-    const id = window.setTimeout(() => {
-      dismissToast()
-      setMode('collapsed')
-    }, AUTO_TOAST_MS)
+    let id: number
+    const tryClose = () => {
+      if (hoveringRef.current) {
+        id = window.setTimeout(tryClose, AUTO_TOAST_MS)
+      } else {
+        dismissToast()
+        setMode('collapsed')
+      }
+    }
+    id = window.setTimeout(tryClose, AUTO_TOAST_MS)
     return () => window.clearTimeout(id)
   }, [toast, loggedOut, mode, dismissToast])
 
@@ -102,18 +123,20 @@ export default function OverlayWidget() {
 
   if (mode === 'toast' && toast) {
     return (
-      <OverlayToast
-        toast={toast}
-        onOpen={() => {
-          dismissToast()
-          setMode('hud')
-        }}
-        onCollapse={() => {
-          dismissToast()
-          setMode('collapsed')
-        }}
-        onHide={() => window.overlay.hide()}
-      />
+      <div style={{ width: '100%', height: '100%' }} {...autoCloseProps}>
+        <OverlayToast
+          toast={toast}
+          onOpen={() => {
+            dismissToast()
+            setMode('hud')
+          }}
+          onCollapse={() => {
+            dismissToast()
+            setMode('collapsed')
+          }}
+          onHide={() => window.overlay.hide()}
+        />
+      </div>
     )
   }
 
@@ -150,16 +173,18 @@ export default function OverlayWidget() {
   }
 
   return (
-    <WorkContextPanel
-      data={data}
-      variant={mode === 'hud' ? 'hud' : 'popover'}
-      review={review}
-      nextAction={nextAction}
-      onFindingHandled={() => void refresh()}
-      onCreateBranchDraft={() => void createBranchDraft()}
-      onOpenDashboard={() => window.overlay.openDashboard()}
-      onCollapse={() => setMode('collapsed')}
-      onHide={() => window.overlay.hide()}
-    />
+    <div style={{ width: '100%', height: '100%' }} {...autoCloseProps}>
+      <WorkContextPanel
+        data={data}
+        variant={mode === 'hud' ? 'hud' : 'popover'}
+        review={review}
+        nextAction={nextAction}
+        onFindingHandled={() => void refresh()}
+        onCreateBranchDraft={() => void createBranchDraft()}
+        onOpenDashboard={() => window.overlay.openDashboard()}
+        onCollapse={() => setMode('collapsed')}
+        onHide={() => window.overlay.hide()}
+      />
+    </div>
   )
 }
