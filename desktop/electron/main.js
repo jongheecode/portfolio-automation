@@ -112,15 +112,20 @@ function createWindow() {
   mainWindow.show()
 }
 
-function createTray() {
-  tray = new Tray(path.join(__dirname, '..', 'assets', 'tray.png'))
-  tray.setToolTip('Week Pulse 오버레이')
-  tray.setContextMenu(Menu.buildFromTemplate([
-    { label: '오버레이 보이기', click: () => showOverlay() },
+// 알약 우클릭과 트레이 아이콘 우클릭이 서로 다른 메뉴를 갖던 것을 하나로 합쳤다.
+function buildOverlayMenuTemplate() {
+  return [
+    { label: 'HUD로 열기 (Alt+Ctrl+W)', click: () => showOverlay('hud') },
     { label: '숨기기', click: () => mainWindow?.hide() },
     { type: 'separator' },
     { label: '종료', click: () => app.quit() },
-  ]))
+  ]
+}
+
+function createTray() {
+  tray = new Tray(path.join(__dirname, '..', 'assets', 'tray.png'))
+  tray.setToolTip('Week Pulse 오버레이')
+  tray.setContextMenu(Menu.buildFromTemplate(buildOverlayMenuTemplate()))
   tray.on('click', () => {
     if (!mainWindow) return
     if (mainWindow.isVisible()) mainWindow.hide()
@@ -177,12 +182,7 @@ ipcMain.on('overlay:quit', () => {
 
 ipcMain.on('overlay:menu', () => {
   if (!mainWindow) return
-  Menu.buildFromTemplate([
-    { label: '숨기기', click: () => mainWindow.hide() },
-    { label: '다시 열기 (Alt+Ctrl+W)', click: () => showOverlay('hud') },
-    { type: 'separator' },
-    { label: '종료', click: () => app.quit() },
-  ]).popup({ window: mainWindow })
+  Menu.buildFromTemplate(buildOverlayMenuTemplate()).popup({ window: mainWindow })
 })
 
 function showOverlay(mode) {
