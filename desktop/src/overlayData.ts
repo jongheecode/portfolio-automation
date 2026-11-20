@@ -54,19 +54,6 @@ interface LocalGitResponseDto {
   active: LocalGitSnapshotDto | null
 }
 
-export interface DiffHunk {
-  path: string
-  staged: boolean
-  additions: number
-  deletions: number
-  patch: string
-}
-
-export interface LocalDiffReview {
-  files: DiffHunk[]
-  notes: string[]
-}
-
 const API_BASE = ''
 
 export class UnauthorizedError extends Error {}
@@ -92,10 +79,6 @@ export function fetchWeek(): Promise<WeekViewSummary> {
 
 export function fetchLocalGit(): Promise<LocalGitResponseDto> {
   return apiFetch<LocalGitResponseDto>('/api/local-git')
-}
-
-export function fetchLocalDiff(): Promise<LocalDiffReview> {
-  return apiFetch<LocalDiffReview>('/api/local-git/diff')
 }
 
 export function createDraftFromLocal(weekStart: string, summaries: string[]): Promise<unknown> {

@@ -1,8 +1,7 @@
-import ChangeReviewPanel from './ChangeReviewPanel'
 import FindingDetail from './FindingDetail'
 import OverlayChrome from './OverlayChrome'
 import WeekStrip from './WeekStrip'
-import type { LocalDiffReview, NextAction } from './overlayData'
+import type { NextAction } from './overlayData'
 
 export interface WipFile {
   tag: 'M' | 'A' | 'D'
@@ -60,7 +59,6 @@ const TAG_BG: Record<WipFile['tag'], string> = {
 export default function WorkContextPanel({
   data,
   variant,
-  review,
   nextAction,
   onFindingHandled,
   onCreateBranchDraft,
@@ -70,7 +68,6 @@ export default function WorkContextPanel({
 }: {
   data: WorkContextData
   variant: 'popover' | 'hud'
-  review: LocalDiffReview | null
   nextAction: NextAction | null
   onFindingHandled: () => void
   onCreateBranchDraft: () => void
@@ -143,7 +140,6 @@ export default function WorkContextPanel({
                 </div>
               ))}
             </div>
-            <ChangeReviewPanel review={review} />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
@@ -292,8 +288,6 @@ export default function WorkContextPanel({
           </div>
         </div>
       )}
-
-      <ChangeReviewPanel review={review} compact />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', flex: 1, minHeight: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>

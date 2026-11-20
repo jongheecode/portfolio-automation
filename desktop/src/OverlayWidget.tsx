@@ -36,7 +36,7 @@ const TIER_COLOR: Record<string, string> = {
 }
 
 export default function OverlayWidget() {
-  const { me, loggedOut, connectionOk, hasLocalRepo, data, newCommitTick, toast, review, nextAction, refresh, createBranchDraft, dismissToast, loadReview } =
+  const { me, loggedOut, connectionOk, hasLocalRepo, data, newCommitTick, toast, nextAction, refresh, createBranchDraft, dismissToast } =
     useOverlayData()
   void me
   const [mode, setModeState] = useState<Mode>('collapsed')
@@ -67,10 +67,6 @@ export default function OverlayWidget() {
   useEffect(() => {
     return window.overlay.onLoginComplete(() => void refresh())
   }, [refresh])
-
-  useEffect(() => {
-    if (mode === 'popover' || mode === 'hud') void loadReview()
-  }, [mode, loadReview])
 
   useEffect(() => {
     if (newCommitTick === 0) return
@@ -177,7 +173,6 @@ export default function OverlayWidget() {
       <WorkContextPanel
         data={data}
         variant={mode === 'hud' ? 'hud' : 'popover'}
-        review={review}
         nextAction={nextAction}
         onFindingHandled={() => void refresh()}
         onCreateBranchDraft={() => void createBranchDraft()}

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   createDraftFromLocal,
-  fetchLocalDiff,
   fetchLocalGit,
   fetchMe,
   fetchNextAction,
@@ -9,7 +8,6 @@ import {
   formatHm,
   UnauthorizedError,
   weekdayLabel,
-  type LocalDiffReview,
   type Me,
   type NextAction,
 } from './overlayData'
@@ -60,7 +58,6 @@ interface State {
   weekStart: string | null
   newCommitTick: number
   toast: OverlayToastData | null
-  review: LocalDiffReview | null
   nextAction: NextAction | null
 }
 
@@ -74,7 +71,6 @@ export function useOverlayData() {
     weekStart: null,
     newCommitTick: 0,
     toast: null,
-    review: null,
     nextAction: null,
   })
   const tickRef = useRef(0)
@@ -166,15 +162,6 @@ export function useOverlayData() {
     }
   }, [])
 
-  const loadReview = useCallback(async () => {
-    try {
-      const review = await fetchLocalDiff()
-      setState((prev) => ({ ...prev, review }))
-    } catch {
-      setState((prev) => ({ ...prev, review: null }))
-    }
-  }, [])
-
   const createBranchDraft = useCallback(async () => {
     if (!state.weekStart || !state.data || state.data.branchCommitMessages.length === 0) return
     try {
@@ -195,5 +182,5 @@ export function useOverlayData() {
     setState((prev) => ({ ...prev, toast: null }))
   }, [])
 
-  return { ...state, refresh: poll, createBranchDraft, dismissToast, loadReview }
+  return { ...state, refresh: poll, createBranchDraft, dismissToast }
 }
