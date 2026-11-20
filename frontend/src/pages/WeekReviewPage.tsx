@@ -2,6 +2,17 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { LiveFinding, WeekView } from '../types'
 
+const STATUS_LABEL: Record<string, string> = {
+  OPEN: '아직 안 봄',
+  DISMISSED: '넘김',
+  USED_IN_POST: '글에 넣음',
+}
+const STATUS_COLOR: Record<string, string> = {
+  OPEN: 'var(--muted)',
+  DISMISSED: 'var(--muted)',
+  USED_IN_POST: 'var(--diff-add)',
+}
+
 function WeekReviewPage() {
   const [week, setWeek] = useState<WeekView | null>(null)
   const [live, setLive] = useState<LiveFinding[]>([])
@@ -85,9 +96,12 @@ function WeekReviewPage() {
                   <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{commit.repoName}</span>
                 </div>
                 {(commit.findings ?? []).map((finding) => (
-                  <div key={finding.id} style={{ display: 'flex', gap: 8, fontSize: 13 }}>
+                  <div key={finding.id} style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 13 }}>
                     <span style={{ fontWeight: 600, color: 'var(--muted)' }}>{finding.category}</span>
-                    <span>{finding.message}</span>
+                    <span style={{ flex: 1 }}>{finding.message}</span>
+                    <span style={{ fontSize: 11.5, color: STATUS_COLOR[finding.status] ?? 'var(--muted)', whiteSpace: 'nowrap' }}>
+                      {STATUS_LABEL[finding.status] ?? finding.status}
+                    </span>
                   </div>
                 ))}
               </div>
