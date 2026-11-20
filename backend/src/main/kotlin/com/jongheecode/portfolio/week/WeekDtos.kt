@@ -15,7 +15,10 @@ data class WeekResponse(
     val pack: WeekPackDto?,
     val weekly: List<WeeklyPointDto> = emptyList(),
     val unwrittenCommitCount: Int = 0,
+    val recurringFriction: List<RecurringFrictionDto> = emptyList(),
 )
+
+data class RecurringFrictionDto(val ruleId: String, val label: String, val count: Int)
 
 data class WeeksSummary(
     val days: List<WeekDayCountDto>,
@@ -73,6 +76,7 @@ data class WeekCommitDto(
     val deletions: Int = 0,
     val isMerge: Boolean = false,
     val isBot: Boolean = false,
+    val findings: List<com.jongheecode.portfolio.finding.FindingDto> = emptyList(),
 )
 
 data class WeekPackDto(
@@ -119,7 +123,7 @@ fun BlogPost.toPackDto(sourceCommitCount: Int = 0) = WeekPackDto(
     updatedAt = updatedAt,
 )
 
-fun CommitRecord.toWeekCommitDto() = WeekCommitDto(
+fun CommitRecord.toWeekCommitDto(findings: List<com.jongheecode.portfolio.finding.FindingDto> = emptyList()) = WeekCommitDto(
     id = id,
     sha = sha,
     repoName = trackedRepo.fullName,
@@ -131,4 +135,5 @@ fun CommitRecord.toWeekCommitDto() = WeekCommitDto(
     deletions = deletions,
     isMerge = isMerge,
     isBot = isBot,
+    findings = findings,
 )

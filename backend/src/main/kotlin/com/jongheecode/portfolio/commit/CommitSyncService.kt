@@ -1,5 +1,8 @@
 package com.jongheecode.portfolio.commit
 
+import com.jongheecode.portfolio.finding.Finding
+import com.jongheecode.portfolio.finding.FindingRepository
+import com.jongheecode.portfolio.finding.FindingRules
 import com.jongheecode.portfolio.github.GithubActivity
 import com.jongheecode.portfolio.github.GithubApiClient
 import com.jongheecode.portfolio.repo.TrackedRepo
@@ -15,6 +18,7 @@ class CommitSyncService(
     private val githubApiClient: GithubApiClient,
     private val commitRecordRepository: CommitRecordRepository,
     private val trackedRepoRepository: TrackedRepoRepository,
+    private val findingRepository: FindingRepository,
 ) {
     @Transactional
     fun syncAll(user: User): Pair<Int, Int> {
@@ -85,7 +89,7 @@ class CommitSyncService(
                 dto
             }
             val login = detail?.author?.login ?: dto.author?.login
-            commitRecordRepository.save(
+            val saved = commitRecordRepository.save(
                 CommitRecord(
                     trackedRepo = trackedRepo,
                     sha = dto.sha,
@@ -100,11 +104,35 @@ class CommitSyncService(
                     isBot = CommitMeta.isBot(login),
                 ),
             )
+            evaluatePersistedFindings(saved)
             savedCount++
         }
         trackedRepo.lastSyncedAt = Instant.now()
         trackedRepoRepository.save(trackedRepo)
         return savedCount
+    }
+
+    private fun evaluatePersistedFindings(commit: CommitRecord) {
+        // 머지/봇 커밋은 사람이 쓴 커밋이 아니라 발견 대상이 아니다.
+        if (commit.isMerge || commit.isBot) return
+        val candidates = listOfNotNull(
+            FindingRules.weakCommitMessage(commit.message),
+            FindingRules.largeCommit(commit.additions, commit.deletions),
+        )
+        for (candidate in candidates) {
+            if (findingRepository.existsByCommitAndRuleId(commit, candidate.ruleId)) continue
+            findingRepository.save(
+                Finding(
+                    commit = commit,
+                    ruleId = candidate.ruleId,
+                    category = candidate.category,
+                    // 동기화로 들어온 과거 large-commit은 이미 끝난 일이라 알약 후보가 아니다(추세용으로만 남김).
+                    tier = if (candidate.ruleId == "large-commit") null else candidate.tier?.name,
+                    message = candidate.message,
+                    evidence = candidate.evidence,
+                ),
+            )
+        }
     }
 
     private fun ensureTracked(user: User, fullName: String): TrackedRepo {

@@ -41,14 +41,16 @@ class LocalGitService(
     }
 
     @Transactional(readOnly = true)
-    fun review(user: User): LocalDiffReview {
-        val snapshot = list(user).active
+    fun review(user: User): LocalDiffReview = review(list(user).active)
+
+    /** 이미 list()로 얻은 스냅샷으로 diff만 읽는다(같은 요청에서 list()를 두 번 돌리지 않게). */
+    fun review(snapshot: LocalGitSnapshot?): LocalDiffReview {
         if (snapshot == null) return LocalDiffReview(emptyList(), listOf("감시 중인 로컬 레포가 없어요."))
         if (!snapshot.ok) return LocalDiffReview(emptyList(), listOf(snapshot.error ?: "git을 읽지 못했습니다"))
         val path = Path.of(snapshot.path)
         val staged = LocalGitParser.parseUnifiedDiff(gitCli.runOrEmpty(path, "diff", "--cached", "--unified=3"), staged = true)
         val unstaged = LocalGitParser.parseUnifiedDiff(gitCli.runOrEmpty(path, "diff", "--unified=3"), staged = false)
-        val files = (staged + unstaged).distinctBy { it.path }.take(10)
+        val files = (staged + unstaged).distinctBy { it.path }.take(20)
         return LocalDiffReview(
             files = files,
             notes = LocalGitParser.reviewNotes(files, snapshot.changedFileCount, snapshot.additions, snapshot.deletions),
@@ -114,8 +116,8 @@ class LocalGitService(
                 changedFileCount = files.size,
                 additions = files.sumOf { it.additions },
                 deletions = files.sumOf { it.deletions },
-                files = files.take(8),
-                extraFileCount = (files.size - 8).coerceAtLeast(0),
+                files = files.take(40),
+                extraFileCount = (files.size - 40).coerceAtLeast(0),
                 lastCommitAt = lastIso,
                 lastCommitAge = ageSeconds?.let { LocalGitParser.ageLabel(it) },
                 headSha = gitCli.runOrEmpty(path, "rev-parse", "HEAD").trim().ifBlank { null },

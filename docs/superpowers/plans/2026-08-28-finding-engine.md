@@ -1227,11 +1227,7 @@ Add the recurring-friction computation right before the final `WeekResponse(...)
         )
 ```
 
-Add the needed import at the top of `WeekService.kt`:
-
-```kotlin
-import com.jongheecode.portfolio.finding.RecurringFrictionDto
-```
+No import is needed for `RecurringFrictionDto` — `WeekService.kt` and `WeekDtos.kt` are both in package `com.jongheecode.portfolio.week`, so same-package classes are visible without an import. (`FindingRepository` in the constructor above is referenced by its fully-qualified name, so it needs no import either.)
 
 - [ ] **Step 3: Boot the backend and verify manually**
 

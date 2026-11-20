@@ -4,12 +4,14 @@ import {
   fetchLocalDiff,
   fetchLocalGit,
   fetchMe,
+  fetchNextAction,
   fetchWeek,
   formatHm,
   UnauthorizedError,
   weekdayLabel,
   type LocalDiffReview,
   type Me,
+  type NextAction,
 } from './overlayData'
 import type { OverlayToastData } from './OverlayToast'
 import type { WorkContextData } from './WorkContextPanel'
@@ -59,6 +61,7 @@ interface State {
   newCommitTick: number
   toast: OverlayToastData | null
   review: LocalDiffReview | null
+  nextAction: NextAction | null
 }
 
 export function useOverlayData() {
@@ -72,6 +75,7 @@ export function useOverlayData() {
     newCommitTick: 0,
     toast: null,
     review: null,
+    nextAction: null,
   })
   const tickRef = useRef(0)
   const authFails = useRef(0)
@@ -79,7 +83,7 @@ export function useOverlayData() {
   const poll = useCallback(async () => {
     try {
       const me = await fetchMe()
-      const [week, local] = await Promise.all([fetchWeek(), fetchLocalGit()])
+      const [week, local, nextAction] = await Promise.all([fetchWeek(), fetchLocalGit(), fetchNextAction()])
       const active = local.active
 
       const weekTotal = week.days.reduce((sum, d) => sum + (d.commitCount ?? d.commits.length), 0)
@@ -105,7 +109,7 @@ export function useOverlayData() {
 
       if (!active) {
         authFails.current = 0
-        setState((prev) => ({ ...prev, me, loggedOut: false, connectionOk: true, hasLocalRepo: false, data: null, weekStart: week.weekStart, toast: toast ?? prev.toast }))
+        setState((prev) => ({ ...prev, me, nextAction, loggedOut: false, connectionOk: true, hasLocalRepo: false, data: null, weekStart: week.weekStart, toast: toast ?? prev.toast }))
         return
       }
 
@@ -141,6 +145,7 @@ export function useOverlayData() {
       setState((prev) => ({
         ...prev,
         me,
+        nextAction,
         loggedOut: false,
         connectionOk: true,
         hasLocalRepo: true,

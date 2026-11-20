@@ -3,6 +3,7 @@ package com.jongheecode.portfolio.week
 import com.jongheecode.portfolio.blog.BlogPostRepository
 import com.jongheecode.portfolio.commit.CommitRecordRepository
 import com.jongheecode.portfolio.commit.PlanCommitLink
+import com.jongheecode.portfolio.finding.toDto
 import com.jongheecode.portfolio.user.User
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +19,7 @@ class WeekService(
     private val planRepository: PlanRepository,
     private val commitRecordRepository: CommitRecordRepository,
     private val blogPostRepository: BlogPostRepository,
+    private val findingRepository: com.jongheecode.portfolio.finding.FindingRepository,
 ) {
     @Transactional
     fun getWeek(user: User, weekStartRaw: String?): WeekResponse {
@@ -130,6 +132,9 @@ class WeekService(
     private fun buildWeek(user: User, weekStart: LocalDate): WeekResponse {
         val weekEnd = WeekDates.weekEnd(weekStart)
         val commits = weekCommits(user, weekStart)
+        val findingsByCommit = findingRepository.findByCommitIn(commits)
+            .groupBy { it.commit.id }
+            .mapValues { (_, rows) -> rows.map { it.toDto() } }
         val byDate = commits.groupBy { WeekDates.seoulDate(it.committedAt) }
         val planRows = planRepository.findByUserAndDueOnBetweenOrderByDueOnAscIdAsc(user, weekStart, weekEnd)
         val plansByDate = planRows.groupBy { it.dueOn }
@@ -138,7 +143,7 @@ class WeekService(
             val all = byDate[date].orEmpty()
             WeekDayDto(
                 date = date,
-                commits = all.map { it.toWeekCommitDto() },
+                commits = all.map { it.toWeekCommitDto(findingsByCommit[it.id] ?: emptyList()) },
                 commitExtra = 0,
                 commitCount = all.size,
                 planCount = plansByDate[date]?.size ?: 0,
@@ -165,6 +170,13 @@ class WeekService(
         val packCount = packEntity?.let { commitRecordRepository.countByBlogPost(it).toInt() } ?: 0
         val unwritten = commits.count { it.blogPost == null && it.trackedRepo.aiScopeEnabled }
         val weekly = weeklyPoints(user, WeekDates.currentWeekStart(clock))
+        val since = Instant.now(clock).minus(90, java.time.temporal.ChronoUnit.DAYS)
+        val recurringFriction = listOf(
+            "weak-commit-message" to "메시지만 보면 뭔지 모름",
+            "large-commit" to "한 커밋에 200줄 넘김",
+        ).map { (ruleId, label) ->
+            RecurringFrictionDto(ruleId, label, findingRepository.countByCommit_TrackedRepo_UserAndRuleIdAndCreatedAtAfter(user, ruleId, since).toInt())
+        }
         return WeekResponse(
             weekStart = weekStart,
             weekEnd = weekEnd,
@@ -174,6 +186,7 @@ class WeekService(
             pack = packEntity?.toPackDto(packCount),
             weekly = weekly,
             unwrittenCommitCount = unwritten,
+            recurringFriction = recurringFriction,
         )
     }
 

@@ -23,7 +23,7 @@ cd desktop && npm run dev                                 # Electron 오버레�
 
 `backend/.env.local`(gitignore됨)에 `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GEMINI_API_KEY` 필요. **절대 이 파일 내용을 그대로 출력하는 명령(cat, sed -n 'l' 등)을 실행하지 말 것** — 구조 확인만 필요하면 `grep -c`/`length()` 같은 걸로.
 
-## 지금 진행 중: 데스크톱 오버레이 (`desktop/`)
+## 데스크톱 오버레이 (`desktop/`) — 완료, main에 병합됨
 
 op.gg처럼 다른 창 위에 항상 떠 있는 위젯. 설계 문서: `docs/superpowers/specs/2026-08-18-desktop-overlay-design.md`. 구현 계획(Task 1~8): `docs/superpowers/plans/2026-08-18-desktop-overlay.md`. 디자인 원본: `docs/design/Overlay Week Pulse.dc.html`(2a/2b). 루트에 있던 디자인/핸드오프 스크래치 파일들은 `docs/design/`로 옮김.
 
@@ -47,15 +47,19 @@ op.gg처럼 다른 창 위에 항상 떠 있는 위젯. 설계 문서: `docs/sup
 GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 redirect_uri가 달라진다.
 임베디드 창에서 GitHub/Google SSO가 500을 내면 GitHub 계정으로 직접 로그인하는 편이 낫다.
 
-### 알약 디자인 — 적재선(4a) 반영됨
+### 알약 — 발견 엔진 텍스트 알약 (finding-engine 브랜치)
 
-`desktop/src/LoadLinePill.tsx`. 트레이 폭 284. 연결 안 됨/레포 없음은 텍스트 알약.
+적재선 알약(`LoadLinePill`)은 폐기. 접힌 상태는 `TrayIndicator`(점 + 한 줄)이고, 문구는
+`GET /api/findings/next-action`이 고른다: SECURITY > STRUCTURE > push 대기 > 글감 > 커밋 안 한 파일 > CLEAR.
+규칙은 `backend/.../finding/FindingRules.kt`(순수 함수), 우선순위는 `FindingPriority.kt`.
+- 라이브(커밋 전 diff) 규칙은 폴링마다 계산, 저장 안 함. 커밋 메시지/크기 규칙만 GitHub 동기화 때 `findings` 테이블에 저장.
+- 동기화된 `large-commit`은 tier null(추세용) — 알약에 안 뜸. 머지/봇 커밋은 건너뜀.
+- 팝오버 `FindingDetail`: 근거, `commit-split-suggestion`일 때만 명령어 복사, `PATCH /api/findings/{id}`로 넘기기/글에 넣었음.
+- `GET /api/findings/live` → 팝오버 '지금 만지는 중'. 웹 `/week-review`(사이드바 "주간 리뷰")에 커밋별 발견 + 반복 습관.
+- 실행은 절대 안 함(클립보드 복사만). 신규 untracked 파일 내용은 라이브 규칙이 못 본다(`git diff` 기반).
+- 설계/계획: `docs/superpowers/specs|plans/2026-08-28-finding-engine*.md`.
 
-`frontend-design` 스킬로 재검토 후 반영(2026-08-27): 팝오버/HUD를 열어도 적재선이 사라지지 않도록
-`OverlayChrome`에 축소판(96×14.4, 숫자 라벨 없이)을 이어 붙임. 게이트 깊이 변화에 `d` 전환 애니메이션
-추가(`.loadline__gate`, `prefers-reduced-motion` 존중). 게이트 위 숫자 텍스트 대비 낮았던 것 `#12161a`로
-수정. 색 의미 중복 정리 — `--diff-add`/`--diff-del` 토큰을 새로 두어 diff +/-가 더 이상 세이지/황동(활동
-색)을 빌려쓰지 않게 함, 종료 버튼도 황동 대신 `--muted`로.
+색: `--diff-add`/`--diff-del` 토큰이 diff +/-를 담당, 종료 버튼은 `--muted`.
 
 ### Instrument Panel 팔레트 — 토큰 반영됨
 
@@ -66,12 +70,12 @@ GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 red
 
 ### 조작 / 폰트 / 변경 리뷰
 
-팝오버·HUD가 열리면 상단에 드래그 바 + **접기 / 숨기기 / 종료**. 알약은 6px 이상 움직이면 드래그, 아니면 클릭. 적재선 SVG는 `pointer-events: none`.
+팝오버·HUD가 열리면 상단에 드래그 바 + **접기 / 숨기기 / 종료**. 알약은 6px 이상 움직이면 드래그, 아니면 클릭.
 글꼴: Pretendard Variable + IBM Plex Mono (`desktop/index.html`).
 개발 중 확인: `GET /api/local-git/diff` → 팝오버/HUD의 변경 리뷰(휴리스틱 노트 + unified diff). Gemini 없음.
 저녁 18:00 / 금요일 랩 토스트(하루 최대 2개), HUD에서 Enter → 브랜치 초안.
 
-**다음**: 백엔드를 재시작해야 `/diff`가 산다. 오버레이도 Electron main 변경이 있으면 `npm run dev`를 다시. 드래그/접기/숨기기/종료와 리뷰 패널을 화면에서 한 번 확인할 것. Claude Design MCP는 보류.
+**남은 것**: 발견 엔진 PATCH(넘기기/글에 넣었음)가 실제 로그인 세션으로 한 번도 수동 확인이 안 됨(코드 추적으로만 검증) — 로그인 → 팝오버 → 넘기기/글에 넣었음 눌러보고 확인할 것. LLM provider 추상화(Gemini 대체)와 PDF 한글 폰트 번들링은 계정/바이너리 파일이 필요해서 보류 중.
 
 ## 코드 스타일 / 관례
 

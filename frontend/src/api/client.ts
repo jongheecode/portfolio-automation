@@ -4,6 +4,7 @@ import type {
   CommitRecord,
   GithubRepo,
   Habit,
+  LiveFinding,
   Me,
   Plan,
   LocalGitResponse,
@@ -138,6 +139,7 @@ export const api = {
   deleteBlogPost: (id: number) => apiFetch<void>(`/api/blog-posts/${id}`, { method: 'DELETE' }),
   week: (weekStart?: string) =>
     apiFetch<WeekView>(weekStart ? `/api/week?weekStart=${weekStart}` : '/api/week'),
+  liveFindings: () => apiFetch<LiveFinding[]>('/api/findings/live'),
   weeks: (start?: string) =>
     apiFetch<{
       days: { date: string; commitCount: number; planCount: number }[]
