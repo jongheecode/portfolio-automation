@@ -2,8 +2,7 @@ const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell, Menu, Tray, 
 const path = require('node:path')
 const fs = require('node:fs')
 
-// 적재선 알약(LoadLinePill)이 실제 크기 240×36로 그려져야 해서(축소하면 카운트 숫자가 안 읽힘),
-// 트레이 패딩(14+6) + hide 버튼(22) + gap(2)을 더한 폭으로 맞춘다.
+// 접힌 상태는 발견 엔진 텍스트 알약(TrayIndicator: 점 + 한 줄 메시지 + hide 버튼) 하나라 폭 284로 고정한다.
 const COLLAPSED = { width: 284, height: 44 }
 const TOAST = { width: 320, height: 96 }
 const POPOVER = { width: 380, height: 560 }

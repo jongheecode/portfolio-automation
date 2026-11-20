@@ -14,16 +14,6 @@
   --card-shadow: 0 6px 18px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
-.loadline__gate {
-  transition: d 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .loadline__gate {
-    transition: none;
-  }
-}
-
 html,
 body,
 #root {
@@ -336,9 +326,8 @@ button {
 .finding-detail__command code {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  user-select: text;
   font-size: 12px;
   color: var(--text);
 }
@@ -358,4 +347,9 @@ button {
 .finding-detail__actions {
   display: flex;
   gap: 8px;
+}
+
+.finding-detail__error {
+  font-size: 11.5px;
+  color: var(--diff-del);
 }

@@ -82,7 +82,7 @@ object LocalGitParser {
         return entries
     }
 
-    fun parseUnifiedDiff(text: String, staged: Boolean, maxFiles: Int = 10, maxLines: Int = 80): List<DiffHunk> {
+    fun parseUnifiedDiff(text: String, staged: Boolean, maxFiles: Int = 20, maxLines: Int = 80): List<DiffHunk> {
         if (text.isBlank()) return emptyList()
         val clipped = if (text.length > 80_000) text.take(80_000) else text
         return clipped.split(Regex("(?m)^diff --git "))

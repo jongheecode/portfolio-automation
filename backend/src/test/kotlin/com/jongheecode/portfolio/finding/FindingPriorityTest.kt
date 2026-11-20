@@ -68,4 +68,18 @@ class FindingPriorityTest {
         assertEquals("CLEAR", result.tier)
         assertEquals(null, result.findingId)
     }
+
+    @Test
+    fun `ruleId와 filePath가 NextAction까지 전달된다`() {
+        val live = FindingRules.Candidate("commit-split-suggestion", "c", FindingRules.FindingTier.STRUCTURE, "나눠", null, filePath = "a/b.kt")
+        val fromLive = FindingPriority.pick(listOf(live), emptyList(), 0, 0, 0)
+        assertEquals("commit-split-suggestion", fromLive.ruleId)
+        assertEquals("a/b.kt", fromLive.filePath)
+
+        val persisted = FindingPriority.PersistedCandidate(7, FindingRules.FindingTier.STRUCTURE, "m", null, Instant.EPOCH, ruleId = "weak-commit-message")
+        val fromPersisted = FindingPriority.pick(emptyList(), listOf(persisted), 0, 0, 0)
+        assertEquals("weak-commit-message", fromPersisted.ruleId)
+        assertEquals(null, fromPersisted.filePath)
+        assertEquals(7L, fromPersisted.findingId)
+    }
 }

@@ -66,9 +66,11 @@ data class NextActionDto(
     val tier: String,
     val evidence: String?,
     val findingId: Long?,
+    val ruleId: String?,
+    val filePath: String?,
 )
 
-fun FindingPriority.NextAction.toDto() = NextActionDto(message, tier, evidence, findingId)
+fun FindingPriority.NextAction.toDto() = NextActionDto(message, tier, evidence, findingId, ruleId, filePath)
 
 data class LiveFindingDto(
     val ruleId: String,

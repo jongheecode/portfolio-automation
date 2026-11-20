@@ -114,6 +114,16 @@ function Sidebar() {
             </svg>
           }
         />
+        <NavItem
+          to="/week-review"
+          label="주간 리뷰"
+          icon={
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5}>
+              <rect x="2" y="3" width="12" height="11" rx="1.5" />
+              <path d="M2 6.5h12M5.5 1.8v2.4M10.5 1.8v2.4M5 9.5l2 2 4-4" />
+            </svg>
+          }
+        />
         <div style={sectionLabelStyle}>자동화</div>
         <NavItem
           to="/blog"

@@ -110,6 +110,8 @@ export interface NextAction {
   tier: 'SECURITY' | 'STRUCTURE' | 'BACKLOG' | 'CLEAR'
   evidence: string | null
   findingId: number | null
+  ruleId: string | null
+  filePath: string | null
 }
 
 export function fetchNextAction(): Promise<NextAction> {

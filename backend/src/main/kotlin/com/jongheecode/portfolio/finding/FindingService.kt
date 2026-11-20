@@ -4,6 +4,7 @@ import com.jongheecode.portfolio.git.LocalGitService
 import com.jongheecode.portfolio.git.WipFile
 import com.jongheecode.portfolio.user.User
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FindingService(
@@ -12,13 +13,13 @@ class FindingService(
 ) {
     fun nextAction(user: User): FindingPriority.NextAction {
         val active = localGitService.list(user).active
-        val liveCandidates = if (active != null && active.ok) evaluateLive(user, active) else emptyList()
+        val liveCandidates = if (active != null && active.ok) evaluateLive(active) else emptyList()
 
         val persistedOpen = findingRepository
             .findByCommit_TrackedRepo_UserAndStatusOrderByCreatedAtAsc(user, "OPEN")
             .mapNotNull { finding ->
                 val tier = finding.tier?.let { runCatching { FindingRules.FindingTier.valueOf(it) }.getOrNull() } ?: return@mapNotNull null
-                FindingPriority.PersistedCandidate(finding.id, tier, finding.message, finding.evidence, finding.createdAt)
+                FindingPriority.PersistedCandidate(finding.id, tier, finding.message, finding.evidence, finding.createdAt, finding.ruleId)
             }
 
         return FindingPriority.pick(
@@ -30,6 +31,8 @@ class FindingService(
         )
     }
 
+    // open-in-view=false라 finding.commit(LAZY) 권한 체크가 세션 안에서 돌아야 한다.
+    @Transactional
     fun updateStatus(user: User, id: Long, status: String): FindingDto {
         require(status == "DISMISSED" || status == "USED_IN_POST") { "알 수 없는 상태입니다: $status" }
         val finding = findingRepository.findById(id).orElseThrow { NoSuchElementException("발견을 찾을 수 없습니다: $id") }
@@ -38,8 +41,8 @@ class FindingService(
         return findingRepository.save(finding).toDto()
     }
 
-    private fun evaluateLive(user: User, snapshot: com.jongheecode.portfolio.git.LocalGitSnapshot): List<FindingRules.Candidate> {
-        val safeFiles = DiffSizeGuard.filter(localGitService.review(user).files)
+    private fun evaluateLive(snapshot: com.jongheecode.portfolio.git.LocalGitSnapshot): List<FindingRules.Candidate> {
+        val safeFiles = DiffSizeGuard.filter(localGitService.review(snapshot).files)
         val wipFiles: List<WipFile> = snapshot.files
         val checks: List<() -> FindingRules.Candidate?> = listOf(
             { FindingRules.ipcHandlerMissingValidation(safeFiles) },
@@ -77,6 +80,6 @@ class FindingService(
 
     fun liveFindings(user: User): List<FindingRules.Candidate> {
         val active = localGitService.list(user).active
-        return if (active != null && active.ok) evaluateLive(user, active) else emptyList()
+        return if (active != null && active.ok) evaluateLive(active) else emptyList()
     }
 }

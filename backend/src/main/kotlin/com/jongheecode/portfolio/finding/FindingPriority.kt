@@ -9,6 +9,7 @@ object FindingPriority {
         val message: String,
         val evidence: String?,
         val createdAt: Instant,
+        val ruleId: String? = null,
     )
 
     data class NextAction(
@@ -16,6 +17,8 @@ object FindingPriority {
         val tier: String,
         val evidence: String?,
         val findingId: Long?,
+        val ruleId: String? = null,
+        val filePath: String? = null,
     )
 
     fun pick(
@@ -43,10 +46,10 @@ object FindingPriority {
         persistedOpen: List<PersistedCandidate>,
     ): NextAction? {
         liveCandidates.firstOrNull { it.tier == tier }?.let {
-            return NextAction(it.message, tier.name, it.evidence, null)
+            return NextAction(it.message, tier.name, it.evidence, null, it.ruleId, it.filePath)
         }
         persistedOpen.filter { it.tier == tier }.minByOrNull { it.createdAt }?.let {
-            return NextAction(it.message, tier.name, it.evidence, it.id)
+            return NextAction(it.message, tier.name, it.evidence, it.id, it.ruleId, null)
         }
         return null
     }

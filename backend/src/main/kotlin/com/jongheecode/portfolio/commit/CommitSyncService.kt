@@ -113,6 +113,8 @@ class CommitSyncService(
     }
 
     private fun evaluatePersistedFindings(commit: CommitRecord) {
+        // 머지/봇 커밋은 사람이 쓴 커밋이 아니라 발견 대상이 아니다.
+        if (commit.isMerge || commit.isBot) return
         val candidates = listOfNotNull(
             FindingRules.weakCommitMessage(commit.message),
             FindingRules.largeCommit(commit.additions, commit.deletions),
@@ -124,7 +126,8 @@ class CommitSyncService(
                     commit = commit,
                     ruleId = candidate.ruleId,
                     category = candidate.category,
-                    tier = candidate.tier?.name,
+                    // 동기화로 들어온 과거 large-commit은 이미 끝난 일이라 알약 후보가 아니다(추세용으로만 남김).
+                    tier = if (candidate.ruleId == "large-commit") null else candidate.tier?.name,
                     message = candidate.message,
                     evidence = candidate.evidence,
                 ),
