@@ -187,6 +187,12 @@ class FindingRulesTest {
     }
 
     @Test
+    fun `desktop만 바뀌면 테스트 관례가 없어 안 걸린다`() {
+        val files = listOf(com.jongheecode.portfolio.git.WipFile("M", "desktop/src/OverlayWidget.tsx", 20, 3))
+        assertEquals(null, FindingRules.noTestTouched(files))
+    }
+
+    @Test
     fun `추가된 TODO 줄 수를 센다`() {
         val files = listOf(
             DiffHunk(path = "a.kt", staged = false, additions = 2, deletions = 0, patch = "+// TODO: 나중에\n+val x = 1\n+// TODO: 이것도"),

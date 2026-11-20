@@ -148,7 +148,8 @@ object FindingRules {
         path.contains("test", ignoreCase = true) || path.contains(".spec.")
 
     fun noTestTouched(wipFiles: List<com.jongheecode.portfolio.git.WipFile>): Candidate? {
-        val sourceTouched = wipFiles.any { isSourceFile(it.path) }
+        // desktop/frontend는 AGENTS.md 관례상 테스트가 없음 — backend 변경에만 의미 있는 신호.
+        val sourceTouched = wipFiles.any { it.path.startsWith("backend/") && isSourceFile(it.path) }
         val testTouched = wipFiles.any { isTestFile(it.path) }
         if (!sourceTouched || testTouched) return null
         return Candidate(
