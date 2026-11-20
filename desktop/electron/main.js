@@ -14,6 +14,7 @@ let mainWindow = null
 let dragStart = null
 let loginWindow = null
 let tray = null
+let currentMode = 'collapsed'
 
 function loadCollapsedPosition() {
   try {
@@ -27,10 +28,10 @@ function loadCollapsedPosition() {
   return { x: work.x + work.width - COLLAPSED.width - 24, y: work.y + 24 }
 }
 
-function clampToWorkArea(position) {
+function clampToWorkArea(position, size = COLLAPSED) {
   const work = screen.getPrimaryDisplay().workArea
-  const x = Math.min(Math.max(position.x, work.x), work.x + work.width - COLLAPSED.width)
-  const y = Math.min(Math.max(position.y, work.y), work.y + work.height - COLLAPSED.height)
+  const x = Math.min(Math.max(position.x, work.x), work.x + work.width - size.width)
+  const y = Math.min(Math.max(position.y, work.y), work.y + work.height - size.height)
   return { x, y }
 }
 
@@ -129,6 +130,7 @@ function createTray() {
 
 ipcMain.on('overlay:set-mode', (_event, mode) => {
   if (!mainWindow) return
+  currentMode = mode
   mainWindow.setBounds(boundsForMode(mode))
 })
 
@@ -142,11 +144,15 @@ ipcMain.on('overlay:drag-move', () => {
   const cursor = screen.getCursorScreenPoint()
   const dx = cursor.x - dragStart.cursor.x
   const dy = cursor.y - dragStart.cursor.y
-  mainWindow.setPosition(dragStart.window[0] + dx, dragStart.window[1] + dy)
+  const [width, height] = mainWindow.getSize()
+  const { x, y } = clampToWorkArea({ x: dragStart.window[0] + dx, y: dragStart.window[1] + dy }, { width, height })
+  mainWindow.setPosition(x, y)
 })
 
 ipcMain.on('overlay:drag-end', () => {
-  if (mainWindow && dragStart) {
+  // 팝오버/HUD의 드래그 바로 끌었을 때는 그 위치를 "접힌 알약 위치"로 저장하면 안 된다
+  // (다음에 접혔을 때 엉뚱한 자리에 뜨게 됨) — collapsed 모드일 때만 저장한다.
+  if (mainWindow && dragStart && currentMode === 'collapsed') {
     const [x, y] = mainWindow.getPosition()
     saveCollapsedPosition({ x, y })
   }
@@ -232,6 +238,15 @@ app.whenReady().then(async () => {
   createTray()
   globalShortcut.register('Alt+Control+W', () => {
     showOverlay('hud')
+  })
+  // 모니터 연결이 바뀌면(특히 외장 모니터를 뺐을 때) 알약이 이제 없는 화면 영역에 남아
+  // 안 보일 수 있다 — 작업 영역이 바뀔 때마다 접힌 위치를 다시 클램프한다.
+  screen.on('display-metrics-changed', () => {
+    if (!mainWindow) return
+    const [width, height] = mainWindow.getSize()
+    const { x, y } = clampToWorkArea(mainWindow.getPosition(), { width, height })
+    mainWindow.setPosition(x, y)
+    if (currentMode === 'collapsed') saveCollapsedPosition({ x, y })
   })
 })
 
