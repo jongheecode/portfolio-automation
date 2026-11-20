@@ -21,6 +21,10 @@ class FindingController(
     fun nextAction(@AuthenticationPrincipal principal: OAuth2User): NextActionDto =
         findingService.nextAction(userRepository.currentUser(principal)).toDto()
 
+    @GetMapping("/live")
+    fun live(@AuthenticationPrincipal principal: OAuth2User): List<LiveFindingDto> =
+        findingService.liveFindings(userRepository.currentUser(principal)).map { it.toLiveDto() }
+
     @PatchMapping("/{id}")
     fun updateStatus(
         @AuthenticationPrincipal principal: OAuth2User,

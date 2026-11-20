@@ -177,6 +177,14 @@ export interface WeekView {
   recurringFriction?: RecurringFriction[]
 }
 
+export interface LiveFinding {
+  ruleId: string
+  category: string
+  tier: string | null
+  message: string
+  evidence: string | null
+}
+
 export interface PortfolioDraft {
   content: string
   includedRepoIds: number[]

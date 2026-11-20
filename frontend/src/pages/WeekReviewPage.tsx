@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
-import type { WeekView } from '../types'
+import type { LiveFinding, WeekView } from '../types'
 
 function WeekReviewPage() {
   const [week, setWeek] = useState<WeekView | null>(null)
+  const [live, setLive] = useState<LiveFinding[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api
-      .week()
-      .then(setWeek)
+    Promise.all([api.week(), api.liveFindings()])
+      .then(([weekRes, liveRes]) => {
+        setWeek(weekRes)
+        setLive(liveRes)
+      })
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
@@ -29,6 +32,21 @@ function WeekReviewPage() {
 
       {!loading && !error && (
         <>
+          <section style={{ border: '1px solid var(--border)', borderRadius: 13, background: 'var(--panel)', boxShadow: 'var(--card-shadow)', padding: '14px 14px 12px' }}>
+            <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>지금 만지는 중</div>
+            {live.length === 0 && (
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>지금 걸리는 게 없어요.</p>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {live.map((finding) => (
+                <div key={finding.ruleId} style={{ display: 'flex', gap: 8, fontSize: 13.5 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--muted)' }}>{finding.category}</span>
+                  <span>{finding.message}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section style={{ border: '1px solid var(--border)', borderRadius: 13, background: 'var(--panel)', boxShadow: 'var(--card-shadow)', padding: '14px 14px 12px' }}>
             <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>계속 걸리는 것</div>
             {recurringFriction.length === 0 && (

@@ -48,6 +48,7 @@ class FindingService(
             { FindingRules.evalOrExec(safeFiles) },
             { FindingRules.commitSplitSuggestion(wipFiles) },
             { FindingRules.largeCommit(snapshot.additions, snapshot.deletions) },
+            { FindingRules.noTestTouched(wipFiles) },
         )
         val results = mutableListOf<FindingRules.Candidate>()
         for (check in checks) {
@@ -57,6 +58,25 @@ class FindingService(
                 // 규칙 하나가 죽어도 나머지 규칙과 폴링에 영향 없게 스킵한다.
             }
         }
+        try {
+            val todoCount = FindingRules.newTodoCount(safeFiles)
+            if (todoCount > 0) {
+                results += FindingRules.Candidate(
+                    ruleId = "new-todo-count",
+                    category = "기록",
+                    tier = null,
+                    message = "TODO ${todoCount}개 새로 추가됨",
+                    evidence = null,
+                )
+            }
+        } catch (e: Exception) {
+            // 규칙 하나가 죽어도 나머지에 영향 없게
+        }
         return results
+    }
+
+    fun liveFindings(user: User): List<FindingRules.Candidate> {
+        val active = localGitService.list(user).active
+        return if (active != null && active.ok) evaluateLive(user, active) else emptyList()
     }
 }

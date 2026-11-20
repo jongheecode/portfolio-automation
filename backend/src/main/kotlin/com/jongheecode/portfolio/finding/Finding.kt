@@ -69,3 +69,13 @@ data class NextActionDto(
 )
 
 fun FindingPriority.NextAction.toDto() = NextActionDto(message, tier, evidence, findingId)
+
+data class LiveFindingDto(
+    val ruleId: String,
+    val category: String,
+    val tier: String?,
+    val message: String,
+    val evidence: String?,
+)
+
+fun FindingRules.Candidate.toLiveDto() = LiveFindingDto(ruleId, category, tier?.name, message, evidence)
