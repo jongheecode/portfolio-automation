@@ -75,12 +75,15 @@ function boundsForMode(mode) {
       y: Math.round(work.y + (work.height - HUD.height) / 2),
     }
   }
+  // 알약 기본 위치(우상단 24px)에서 그대로 열면 토스트/팝오버가 더 넓어서 화면 밖으로 나간다 — 다시 클램프.
   if (mode === 'toast') {
-    const [x, y] = mainWindow.getPosition()
+    const [curX, curY] = mainWindow.getPosition()
+    const { x, y } = clampToWorkArea({ x: curX, y: curY }, TOAST)
     return { width: TOAST.width, height: TOAST.height, x, y }
   }
   if (mode === 'popover') {
-    const [x, y] = mainWindow.getPosition()
+    const [curX, curY] = mainWindow.getPosition()
+    const { x, y } = clampToWorkArea({ x: curX, y: curY }, POPOVER)
     return { width: POPOVER.width, height: POPOVER.height, x, y }
   }
   const { x, y } = clampToWorkArea(loadCollapsedPosition())
