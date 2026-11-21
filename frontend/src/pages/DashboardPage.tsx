@@ -89,6 +89,9 @@ function DashboardPage() {
     }
     const richest = [...week.days].sort((a, b) => dayCount(b) - dayCount(a))[0]
     setSelectedDate(richest?.date ?? week.weekStart)
+    // week 전체가 아니라 week.weekStart만 의존성으로 둔다 — 동기화/초안 생성 뒤에 같은 주의
+    // week가 새로 로드될 때마다 이 기본 선택 로직이 다시 돌면 사용자가 이미 고른 날짜를 덮어써버린다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [week?.weekStart, today])
 
   useEffect(() => {
