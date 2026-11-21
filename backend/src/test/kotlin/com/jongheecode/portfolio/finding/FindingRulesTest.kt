@@ -94,6 +94,30 @@ class FindingRulesTest {
     }
 
     @Test
+    fun `AWS 액세스 키 형식을 잡는다`() {
+        val files = listOf(
+            DiffHunk(path = "backend/.env.local", staged = false, additions = 1, deletions = 0, patch = "+AWS_KEY=AKIAABCDEFGHIJKLMNOP"),
+        )
+        assertEquals("secret-leak", FindingRules.secretLeak(files)?.ruleId)
+    }
+
+    @Test
+    fun `GitHub 토큰 형식을 잡는다`() {
+        val files = listOf(
+            DiffHunk(path = "backend/application.yml", staged = false, additions = 1, deletions = 0, patch = "+token: ghp_123456789012345678901234567890123456"),
+        )
+        assertEquals("secret-leak", FindingRules.secretLeak(files)?.ruleId)
+    }
+
+    @Test
+    fun `변수명만 있고 실제 키 형식이 없으면 안 걸린다`() {
+        val files = listOf(
+            DiffHunk(path = "backend/AGENTS.md", staged = false, additions = 2, deletions = 0, patch = "+GEMINI_API_KEY 필요\n+accessToken = \"token\""),
+        )
+        assertEquals(null, FindingRules.secretLeak(files))
+    }
+
+    @Test
     fun `상수 문자열 exec는 안 걸린다`() {
         val files = listOf(
             DiffHunk(path = "backend/Tool.kt", staged = false, additions = 1, deletions = 0, patch = "+exec(\"git status\")"),

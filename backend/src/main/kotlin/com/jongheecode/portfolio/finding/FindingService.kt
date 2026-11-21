@@ -45,6 +45,7 @@ class FindingService(
         val safeFiles = DiffSizeGuard.filter(localGitService.review(snapshot).files)
         val wipFiles: List<WipFile> = snapshot.files
         val checks: List<() -> FindingRules.Candidate?> = listOf(
+            { FindingRules.secretLeak(safeFiles) },
             { FindingRules.ipcHandlerMissingValidation(safeFiles) },
             { FindingRules.corsWildcard(safeFiles) },
             { FindingRules.electronInsecureFlags(safeFiles) },

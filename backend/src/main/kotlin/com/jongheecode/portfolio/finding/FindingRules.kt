@@ -82,6 +82,26 @@ object FindingRules {
         )
     }
 
+    // 실제 비밀값만 알려주는 서명 — 변수명(GEMINI_API_KEY 등)이나 플레이스홀더는 안 잡게 특정 발급 형식만 본다.
+    private val SECRET_PATTERNS = listOf(
+        Regex("""AKIA[0-9A-Z]{16}"""), // AWS access key
+        Regex("""gh[pousr]_[A-Za-z0-9]{36}"""), // GitHub 토큰(ghp_/gho_/ghu_/ghs_/ghr_)
+        Regex("""AIza[0-9A-Za-z\-_]{35}"""), // Google API key
+        Regex("""-----BEGIN (RSA |EC |OPENSSH |)PRIVATE KEY-----"""),
+    )
+
+    fun secretLeak(files: List<DiffHunk>): Candidate? {
+        val hit = files.firstOrNull { file -> addedLines(file).any { line -> SECRET_PATTERNS.any { it.containsMatchIn(line) } } } ?: return null
+        return Candidate(
+            ruleId = "secret-leak",
+            category = "보안",
+            tier = FindingTier.SECURITY,
+            message = "비밀값이 커밋에 들어간 것 같아요",
+            evidence = "${hit.path} — 발급된 키/토큰 형식의 문자열이 추가됐어요. 커밋 전에 지우고 .env.local로 옮기세요.",
+            filePath = hit.path,
+        )
+    }
+
     private val ROOT_LEVEL_FILES = setOf(
         "docker-compose.yml", "README.md", ".gitignore", "AGENTS.md",
     )
