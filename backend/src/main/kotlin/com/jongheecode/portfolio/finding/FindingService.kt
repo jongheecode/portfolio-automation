@@ -53,6 +53,7 @@ class FindingService(
             { FindingRules.evalOrExec(safeFiles) },
             { FindingRules.commitSplitSuggestion(wipFiles) },
             { FindingRules.largeCommit(snapshot.additions, snapshot.deletions) },
+            { FindingRules.debugArtifact(safeFiles) },
             { FindingRules.noTestTouched(wipFiles) },
         )
         val results = mutableListOf<FindingRules.Candidate>()

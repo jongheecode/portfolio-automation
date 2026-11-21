@@ -118,6 +118,38 @@ class FindingRulesTest {
     }
 
     @Test
+    fun `console_log가 추가되면 잡는다`() {
+        val files = listOf(
+            DiffHunk(path = "desktop/src/OverlayWidget.tsx", staged = false, additions = 1, deletions = 0, patch = "+console.log('debug', data)"),
+        )
+        assertEquals("debug-artifact", FindingRules.debugArtifact(files)?.ruleId)
+    }
+
+    @Test
+    fun `debugger 문도 잡는다`() {
+        val files = listOf(
+            DiffHunk(path = "frontend/src/App.tsx", staged = false, additions = 1, deletions = 0, patch = "+debugger"),
+        )
+        assertEquals("debug-artifact", FindingRules.debugArtifact(files)?.ruleId)
+    }
+
+    @Test
+    fun `console_error는 의도된 에러 처리라 안 걸린다`() {
+        val files = listOf(
+            DiffHunk(path = "desktop/src/useOverlayData.ts", staged = false, additions = 1, deletions = 0, patch = "+console.error('브랜치 초안 생성 실패', err)"),
+        )
+        assertEquals(null, FindingRules.debugArtifact(files))
+    }
+
+    @Test
+    fun `kt 파일의 console_log 비슷한 문자열은 안 걸린다`() {
+        val files = listOf(
+            DiffHunk(path = "backend/Foo.kt", staged = false, additions = 1, deletions = 0, patch = "+// console.log 쓰지 말 것"),
+        )
+        assertEquals(null, FindingRules.debugArtifact(files))
+    }
+
+    @Test
     fun `env 파일이 스테이징되면 잡는다`() {
         val files = listOf(com.jongheecode.portfolio.git.WipFile("A", "backend/.env.local", 4, 0))
         val hit = FindingRules.envFileCommitted(files)

@@ -165,6 +165,23 @@ object FindingRules {
         )
     }
 
+    // console.error/warn은 의도된 에러 처리라 빼고, 디버그용으로 찍어보고 지우는 걸 깜빡하는 console.log/debugger만 본다.
+    private val DEBUG_ARTIFACT = Regex("""\bconsole\.log\s*\(|\bdebugger\b""")
+    private fun isJsLike(path: String) = path.endsWith(".ts") || path.endsWith(".tsx") || path.endsWith(".js")
+
+    fun debugArtifact(files: List<DiffHunk>): Candidate? {
+        val hit = files.firstOrNull { file -> isJsLike(file.path) && addedLines(file).any { DEBUG_ARTIFACT.containsMatchIn(it) } }
+            ?: return null
+        return Candidate(
+            ruleId = "debug-artifact",
+            category = "구조",
+            tier = FindingTier.STRUCTURE,
+            message = "디버그용 코드가 남은 것 같아요",
+            evidence = "${hit.path} — console.log 또는 debugger가 추가됐어요.",
+            filePath = hit.path,
+        )
+    }
+
     private val WEAK_MESSAGES = setOf("fix", "wip", "update", "temp", "fix bug", "임시", "수정")
 
     fun weakCommitMessage(message: String): Candidate? {
