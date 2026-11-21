@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 
 @Component
@@ -61,6 +62,10 @@ class DevToApiClient(
             block() ?: error("dev.to API 응답이 비어 있습니다")
         } catch (e: RestClientResponseException) {
             throw IllegalStateException("dev.to API 호출 실패: ${extractApiErrorMessage(e)}")
+        } catch (e: RestClientException) {
+            // HTTP 에러 응답이 아니라 타임아웃/연결 실패처럼 응답 자체를 못 받은 경우.
+            // 안 잡으면 ApiExceptionHandler가 모르는 예외로 빠져서 사용자에게 의미 없는 500만 보인다.
+            throw IllegalStateException("dev.to에 연결할 수 없습니다: ${e.message ?: "알 수 없는 오류"}")
         }
 
     private fun extractApiErrorMessage(e: RestClientResponseException): String =
