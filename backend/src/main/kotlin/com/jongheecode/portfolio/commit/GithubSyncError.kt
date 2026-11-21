@@ -7,6 +7,7 @@ object GithubSyncError {
     const val TOKEN_EXPIRED = "token_expired"
     const val RATE_LIMITED = "rate_limited"
     const val NO_ACCESS = "no_access"
+    const val NETWORK_ERROR = "network_error"
 
     fun code(error: HttpClientErrorException): String {
         val status = error.statusCode.value()

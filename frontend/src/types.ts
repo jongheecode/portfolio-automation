@@ -45,7 +45,7 @@ export interface CommitRecord {
 }
 
 export type DraftStatus = 'draft' | 'published' | 'failed'
-export type SyncErrorCode = 'token_expired' | 'rate_limited' | 'no_access'
+export type SyncErrorCode = 'token_expired' | 'rate_limited' | 'no_access' | 'network_error'
 
 export interface SyncState {
   kind: 'never' | 'syncing' | 'ok' | 'error'

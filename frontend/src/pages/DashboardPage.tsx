@@ -21,6 +21,7 @@ const ERRORS = {
   token_expired: 'GitHub 연결이 만료됐어요. 다시 연결해 주세요.',
   rate_limited: 'GitHub 요청 한도에 걸렸어요. 잠시 후 다시 시도해 주세요.',
   no_access: '이 레포에 접근할 수 없어요. 조직 권한을 확인해 주세요.',
+  network_error: 'GitHub에 연결할 수 없어요. 네트워크를 확인하고 잠시 후 다시 시도해 주세요.',
 }
 
 type ViewState = 'no-repo' | 'not-synced' | 'syncing' | 'error' | 'zero-week' | 'ready'
@@ -30,7 +31,7 @@ function dayCount(day: { commitCount?: number; commits: unknown[]; commitExtra: 
 }
 
 function errorCode(code?: string | null): SyncErrorCode {
-  if (code === 'token_expired' || code === 'rate_limited' || code === 'no_access') return code
+  if (code === 'token_expired' || code === 'rate_limited' || code === 'no_access' || code === 'network_error') return code
   return 'no_access'
 }
 

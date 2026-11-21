@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.RestClientException
 import java.time.Instant
 
 data class SyncStateResponse(
@@ -46,6 +47,12 @@ class SyncExecutor(
             user.lastSyncKind = "error"
             user.lastSyncAttemptAt = Instant.now()
             user.lastSyncErrorCode = GithubSyncError.code(e)
+        } catch (_: RestClientException) {
+            // HTTP 에러 응답이 아니라 타임아웃/연결 실패 — "권한 없음"으로 보이면 사용자가 엉뚱하게
+            // 조직 권한을 확인하러 간다. 네트워크 문제라고 구분해서 알려준다.
+            user.lastSyncKind = "error"
+            user.lastSyncAttemptAt = Instant.now()
+            user.lastSyncErrorCode = GithubSyncError.NETWORK_ERROR
         } catch (_: Exception) {
             user.lastSyncKind = "error"
             user.lastSyncAttemptAt = Instant.now()
