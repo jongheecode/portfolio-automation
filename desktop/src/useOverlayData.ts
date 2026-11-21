@@ -111,6 +111,7 @@ export function useOverlayData() {
 
       const data: WorkContextData = {
         repoName: active.name,
+        repoPath: active.path,
         branch: active.branch ?? null,
         unpushedCount: active.unpushedCount,
         changedFileCount: active.changedFileCount,

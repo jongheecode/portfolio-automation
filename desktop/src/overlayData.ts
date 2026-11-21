@@ -34,6 +34,7 @@ interface LocalTodayCommitDto {
 
 export interface LocalGitSnapshotDto {
   id: number
+  /** 레포의 로컬 절대 경로 — finding의 filePath와 합쳐서 탐색기로 열 때 쓴다. */
   path: string
   name: string
   branch?: string | null

@@ -21,6 +21,7 @@ export interface TodayCommitRow {
 
 export interface WorkContextData {
   repoName: string
+  repoPath: string
   branch: string | null
   unpushedCount: number
   changedFileCount: number
@@ -218,7 +219,7 @@ export default function WorkContextPanel({
   return (
     <div className="panel-shell">
       <OverlayChrome title={data.repoName} onCollapse={onCollapse} onHide={onHide} />
-      {nextAction && <FindingDetail nextAction={nextAction} onHandled={onFindingHandled} />}
+      {nextAction && <FindingDetail nextAction={nextAction} onHandled={onFindingHandled} repoPath={data.repoPath} />}
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
         <span style={{ width: 9, height: 9, borderRadius: 2, background: C.commit, flex: 'none' }} />
         <span className="mono" style={{ fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

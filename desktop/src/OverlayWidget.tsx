@@ -20,6 +20,7 @@ declare global {
       hide: () => void
       quit: () => void
       menu: () => void
+      showInFolder: (repoPath: string, relativePath: string) => void
     }
   }
 }

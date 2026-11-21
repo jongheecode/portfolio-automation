@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('overlay', {
   hide: () => ipcRenderer.send('overlay:hide'),
   quit: () => ipcRenderer.send('overlay:quit'),
   menu: () => ipcRenderer.send('overlay:menu'),
+  showInFolder: (repoPath, relativePath) => ipcRenderer.send('overlay:show-in-folder', repoPath, relativePath),
   onLoginComplete: (callback) => {
     const listener = () => callback()
     ipcRenderer.on('overlay:login-complete', listener)

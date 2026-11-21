@@ -188,6 +188,16 @@ ipcMain.on('overlay:menu', () => {
   Menu.buildFromTemplate(buildOverlayMenuTemplate()).popup({ window: mainWindow })
 })
 
+// finding의 filePath는 백엔드가 같은 로컬 레포를 git diff로 읽어서 준 경로라 신뢰할 수 있지만,
+// 혹시라도 레포 바깥을 가리키면 열지 않게 repoPath 밑인지 한 번 더 확인한다.
+ipcMain.on('overlay:show-in-folder', (_event, repoPath, relativePath) => {
+  if (typeof repoPath !== 'string' || typeof relativePath !== 'string') return
+  const root = path.resolve(repoPath)
+  const target = path.resolve(root, relativePath)
+  if (target !== root && !target.startsWith(root + path.sep)) return
+  shell.showItemInFolder(target)
+})
+
 function showOverlay(mode) {
   if (!mainWindow) return
   mainWindow.show()

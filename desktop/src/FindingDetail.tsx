@@ -8,7 +8,15 @@ const SUGGESTED_COMMAND: Record<string, string> = {
   'large-commit': 'git add -p',
 }
 
-export default function FindingDetail({ nextAction, onHandled }: { nextAction: NextAction; onHandled: () => void }) {
+export default function FindingDetail({
+  nextAction,
+  onHandled,
+  repoPath,
+}: {
+  nextAction: NextAction
+  onHandled: () => void
+  repoPath: string
+}) {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,6 +50,17 @@ export default function FindingDetail({ nextAction, onHandled }: { nextAction: N
   return (
     <div className="finding-detail">
       {nextAction.evidence && <div className="finding-detail__evidence mono">{nextAction.evidence}</div>}
+      {nextAction.filePath && (
+        <div className="finding-detail__command">
+          <code className="mono">{nextAction.filePath}</code>
+          <button
+            type="button"
+            onClick={() => window.overlay.showInFolder(repoPath, nextAction.filePath!)}
+          >
+            탐색기에서 보기
+          </button>
+        </div>
+      )}
       {command && (
         <div className="finding-detail__command">
           <code className="mono">{command}</code>
