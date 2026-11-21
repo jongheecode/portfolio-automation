@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { updateFindingStatus, type NextAction } from './overlayData'
 
-// ruleId 기준: 이미 만든 커밋(large-commit 등)에는 "나눠 커밋" 명령이 맞지 않는다.
+// ruleId 기준. large-commit은 동기화로 들어온 과거 커밋이면 tier가 null이라 여기까지 안 오고,
+// 커밋 전 작업 중 diff가 큰 경우에만(STRUCTURE) 뜨므로 "나눠서 커밋" 명령이 맞다.
 const SUGGESTED_COMMAND: Record<string, string> = {
   'commit-split-suggestion': 'git add <파일들> && git commit -m "..."',
+  'large-commit': 'git add -p',
 }
 
 export default function FindingDetail({ nextAction, onHandled }: { nextAction: NextAction; onHandled: () => void }) {
