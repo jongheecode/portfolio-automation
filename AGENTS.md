@@ -54,7 +54,7 @@ GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 red
 규칙은 `backend/.../finding/FindingRules.kt`(순수 함수), 우선순위는 `FindingPriority.kt`.
 - 라이브(커밋 전 diff) 규칙은 폴링마다 계산, 저장 안 함. 커밋 메시지/크기 규칙만 GitHub 동기화 때 `findings` 테이블에 저장.
 - 동기화된 `large-commit`은 tier null(추세용) — 알약에 안 뜸. 머지/봇 커밋은 건너뜀.
-- 팝오버 `FindingDetail`: 근거, `commit-split-suggestion`일 때만 명령어 복사, `PATCH /api/findings/{id}`로 넘기기/글에 넣었음.
+- 팝오버 `FindingDetail`: 근거, `commit-split-suggestion`/`large-commit`일 때 명령어 복사, filePath 있으면(SECURITY 규칙들) 탐색기에서 보기, `PATCH /api/findings/{id}`로 넘기기/글에 넣었음.
 - `GET /api/findings/live` → 팝오버 '지금 만지는 중'. 웹 `/week-review`(사이드바 "주간 리뷰")에 커밋별 발견 + 반복 습관.
 - 실행은 절대 안 함(클립보드 복사만). 신규 untracked 파일 내용은 라이브 규칙이 못 본다(`git diff` 기반).
 - 설계/계획: `docs/superpowers/specs|plans/2026-08-28-finding-engine*.md`.
