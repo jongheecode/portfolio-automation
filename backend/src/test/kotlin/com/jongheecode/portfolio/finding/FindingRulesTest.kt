@@ -118,6 +118,20 @@ class FindingRulesTest {
     }
 
     @Test
+    fun `env 파일이 스테이징되면 잡는다`() {
+        val files = listOf(com.jongheecode.portfolio.git.WipFile("A", "backend/.env.local", 4, 0))
+        val hit = FindingRules.envFileCommitted(files)
+        assertEquals("env-file-committed", hit?.ruleId)
+        assertEquals("backend/.env.local", hit?.filePath)
+    }
+
+    @Test
+    fun `env example 파일은 안 걸린다`() {
+        val files = listOf(com.jongheecode.portfolio.git.WipFile("A", "backend/.env.example", 4, 0))
+        assertEquals(null, FindingRules.envFileCommitted(files))
+    }
+
+    @Test
     fun `상수 문자열 exec는 안 걸린다`() {
         val files = listOf(
             DiffHunk(path = "backend/Tool.kt", staged = false, additions = 1, deletions = 0, patch = "+exec(\"git status\")"),

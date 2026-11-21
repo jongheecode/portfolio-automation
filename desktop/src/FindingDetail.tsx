@@ -3,9 +3,11 @@ import { updateFindingStatus, type NextAction } from './overlayData'
 
 // ruleId 기준. large-commit은 동기화로 들어온 과거 커밋이면 tier가 null이라 여기까지 안 오고,
 // 커밋 전 작업 중 diff가 큰 경우에만(STRUCTURE) 뜨므로 "나눠서 커밋" 명령이 맞다.
-const SUGGESTED_COMMAND: Record<string, string> = {
-  'commit-split-suggestion': 'git add <파일들> && git commit -m "..."',
-  'large-commit': 'git add -p',
+// filePath가 있는 규칙(env-file-committed)은 실제 경로를 바로 채워서 복사만 하면 되게 한다.
+const SUGGESTED_COMMAND: Record<string, (filePath: string | null) => string> = {
+  'commit-split-suggestion': () => 'git add <파일들> && git commit -m "..."',
+  'large-commit': () => 'git add -p',
+  'env-file-committed': (filePath) => `git restore --staged ${filePath ?? '<파일>'}`,
 }
 
 export default function FindingDetail({
@@ -22,7 +24,7 @@ export default function FindingDetail({
 
   if (nextAction.tier === 'CLEAR' || nextAction.tier === 'BACKLOG') return null
 
-  const command = (nextAction.ruleId && SUGGESTED_COMMAND[nextAction.ruleId]) || null
+  const command = nextAction.ruleId ? SUGGESTED_COMMAND[nextAction.ruleId]?.(nextAction.filePath) ?? null : null
 
   async function copyCommand() {
     if (!command) return

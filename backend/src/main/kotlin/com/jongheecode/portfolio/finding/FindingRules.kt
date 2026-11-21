@@ -102,6 +102,25 @@ object FindingRules {
         )
     }
 
+    // .env.example/.sample/.template은 레포에 커밋되는 게 정상이라 빼고, 진짜 .env류만 본다.
+    private val ENV_SAFE_SUFFIXES = setOf("example", "sample", "template")
+    private val ENV_FILENAME = Regex("""^\.env(?:\.(.+))?$""")
+
+    fun envFileCommitted(wipFiles: List<WipFile>): Candidate? {
+        val hit = wipFiles.firstOrNull { file ->
+            val match = ENV_FILENAME.find(file.path.substringAfterLast('/'))
+            match != null && match.groupValues[1].lowercase() !in ENV_SAFE_SUFFIXES
+        } ?: return null
+        return Candidate(
+            ruleId = "env-file-committed",
+            category = "보안",
+            tier = FindingTier.SECURITY,
+            message = "환경 파일이 커밋에 들어갈 것 같아요",
+            evidence = "${hit.path} — .gitignore에 있어야 할 파일이 스테이징됐어요.",
+            filePath = hit.path,
+        )
+    }
+
     private val ROOT_LEVEL_FILES = setOf(
         "docker-compose.yml", "README.md", ".gitignore", "AGENTS.md",
     )

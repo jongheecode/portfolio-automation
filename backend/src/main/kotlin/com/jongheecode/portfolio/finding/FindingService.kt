@@ -46,6 +46,7 @@ class FindingService(
         val wipFiles: List<WipFile> = snapshot.files
         val checks: List<() -> FindingRules.Candidate?> = listOf(
             { FindingRules.secretLeak(safeFiles) },
+            { FindingRules.envFileCommitted(wipFiles) },
             { FindingRules.ipcHandlerMissingValidation(safeFiles) },
             { FindingRules.corsWildcard(safeFiles) },
             { FindingRules.electronInsecureFlags(safeFiles) },
