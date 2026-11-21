@@ -75,7 +75,7 @@ GitHub 앱 Callback URL은 **localhost**여야 한다. `127.0.0.1`로 열면 red
 저녁 18:00 / 금요일 랩 토스트(하루 최대 2개), HUD에서 Enter → 브랜치 초안.
 옛 unified-diff 변경 리뷰(`ChangeReviewPanel`, `GET /api/local-git/diff`)는 FindingDetail과 중복돼서 프런트에서 걷어냄 — 백엔드 엔드포인트 자체는 그대로 있음.
 
-**남은 것**: 발견 엔진 PATCH(넘기기/글에 넣었음)가 실제 로그인 세션으로 한 번도 수동 확인이 안 됨(코드 추적으로만 검증) — 로그인 → 팝오버 → 넘기기/글에 넣었음 눌러보고 확인할 것. LLM provider 추상화(Gemini 대체)와 PDF 한글 폰트 번들링은 계정/바이너리 파일이 필요해서 보류 중.
+**남은 것**: `FindingService.updateStatus`(넘기기/글에 넣었음)는 권한 체크·상태값 검증·정상 변경 경로를 `FindingServiceTest`로 덮었고, OAuth 리다이렉트·CORS PATCH 허용·인증 없을 때 302는 실제로 띄워서 curl로 확인함(둘 다 docker+백엔드 라이브 상태에서 검증, 2026-11-21). 다만 실제 GitHub 로그인 → 팝오버 클릭까지는 Claude가 실제 계정으로 로그인할 수 없어서 여전히 사람이 한 번 눌러봐야 함. LLM provider 추상화(Gemini 대체)와 PDF 한글 폰트 번들링은 계정/바이너리 파일이 필요해서 보류 중.
 
 ## 코드 스타일 / 관례
 
