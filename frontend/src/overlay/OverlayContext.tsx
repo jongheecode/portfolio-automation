@@ -68,7 +68,6 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const [generating, setGenerating] = useState(false)
   const [toasts, setToasts] = useState<OverlayToast[]>([])
   const toastId = useRef(1)
-  const toastCount = useRef(0)
 
   const loadWeek = useCallback(async (start?: string) => {
     try {
@@ -199,7 +198,6 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
     if (localStorage.getItem(TOAST_DAY_KEY) !== day) {
       localStorage.setItem(TOAST_DAY_KEY, day)
       localStorage.setItem(TOAST_COUNT_KEY, '0')
-      toastCount.current = 0
     }
     const head = active.headSha
     const prevHead = localStorage.getItem(HEAD_KEY)
