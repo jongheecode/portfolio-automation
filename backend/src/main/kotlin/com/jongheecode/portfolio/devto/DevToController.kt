@@ -21,10 +21,12 @@ class DevToController(
     @PostMapping("/connection")
     fun connect(@AuthenticationPrincipal principal: OAuth2User, @RequestBody request: ConnectDevToRequest): ConnectDevToResponse {
         val user = userRepository.currentUser(principal)
+        // fetchUsername이 던지는 메시지는 이미 원인별로 구체적이다(키가 잘못됐는지, 연결이 안 되는지).
+        // 여기서 "API 키가 올바르지 않습니다"로 뭉개면 네트워크 문제일 때도 키 탓을 하게 된다.
         val username = try {
             devToApiClient.fetchUsername(request.apiKey)
         } catch (e: Exception) {
-            error("dev.to API 키가 올바르지 않습니다: ${e.message}")
+            error(e.message ?: "dev.to 연결에 실패했습니다")
         }
         user.devtoApiKey = request.apiKey
         user.devtoUsername = username
