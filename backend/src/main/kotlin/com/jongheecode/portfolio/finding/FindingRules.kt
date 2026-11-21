@@ -82,6 +82,23 @@ object FindingRules {
         )
     }
 
+    // pre/postinstall은 npm install 때 자동 실행되는 임의 코드라 공급망 공격의 흔한 통로다.
+    private val INSTALL_SCRIPT_KEY = Regex(""""(preinstall|postinstall)"\s*:""")
+
+    fun suspiciousPackageScript(files: List<DiffHunk>): Candidate? {
+        val hit = files.firstOrNull { file ->
+            file.path.endsWith("package.json") && addedLines(file).any { INSTALL_SCRIPT_KEY.containsMatchIn(it) }
+        } ?: return null
+        return Candidate(
+            ruleId = "suspicious-package-script",
+            category = "보안",
+            tier = FindingTier.SECURITY,
+            message = "package.json에 설치 스크립트가 추가됐어요",
+            evidence = "${hit.path} — pre/postinstall은 npm install 때 자동 실행돼요. 의도한 거 맞는지 확인하세요.",
+            filePath = hit.path,
+        )
+    }
+
     // 실제 비밀값만 알려주는 서명 — 변수명(GEMINI_API_KEY 등)이나 플레이스홀더는 안 잡게 특정 발급 형식만 본다.
     private val SECRET_PATTERNS = listOf(
         Regex("""AKIA[0-9A-Z]{16}"""), // AWS access key

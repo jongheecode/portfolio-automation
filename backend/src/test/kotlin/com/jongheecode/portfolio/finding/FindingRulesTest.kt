@@ -118,6 +118,22 @@ class FindingRulesTest {
     }
 
     @Test
+    fun `postinstall 스크립트가 추가되면 잡는다`() {
+        val files = listOf(
+            DiffHunk(path = "desktop/package.json", staged = false, additions = 1, deletions = 0, patch = "+    \"postinstall\": \"node setup.js\","),
+        )
+        assertEquals("suspicious-package-script", FindingRules.suspiciousPackageScript(files)?.ruleId)
+    }
+
+    @Test
+    fun `일반 스크립트 추가는 안 걸린다`() {
+        val files = listOf(
+            DiffHunk(path = "desktop/package.json", staged = false, additions = 1, deletions = 0, patch = "+    \"lint\": \"eslint .\","),
+        )
+        assertEquals(null, FindingRules.suspiciousPackageScript(files))
+    }
+
+    @Test
     fun `console_log가 추가되면 잡는다`() {
         val files = listOf(
             DiffHunk(path = "desktop/src/OverlayWidget.tsx", staged = false, additions = 1, deletions = 0, patch = "+console.log('debug', data)"),
